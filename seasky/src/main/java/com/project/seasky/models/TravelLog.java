@@ -1,6 +1,7 @@
 package com.project.seasky.models;
 
 import java.util.Date;
+import java.time.LocalTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -13,15 +14,15 @@ public class TravelLog {
     private String destination;
     private Date travelDate;
     private String modeOfTransport;
-    private Date eta;
-    private Date actualEndTime;
-    private Date startTime;
+    private LocalTime eta;
+    private LocalTime actualEndTime;
+    private LocalTime startTime;
 
     public TravelLog() {
 
     }
 
-    public TravelLog(String travelStatus, String origin, String destination, Date travelDate, String modeOfTransport, Date eta, Date actualEndTime, Date startTime){
+    public TravelLog(String travelStatus, String origin, String destination, Date travelDate, String modeOfTransport, LocalTime eta, LocalTime actualEndTime, LocalTime startTime){
         this.travelStatus = travelStatus;
         this.origin = origin;
         this.destination = destination;
@@ -80,27 +81,27 @@ public class TravelLog {
         this.modeOfTransport = modeOfTransport;
     }
 
-    public Date getEta(){
+    public LocalTime getEta(){
         return eta;
     }
 
-    public void setEta(Date eta){
+    public void setEta(LocalTime eta){
         this.eta = eta;
     }
 
-    public Date getActualEndTime(){
+    public LocalTime getActualEndTime(){
         return actualEndTime;
     }
 
-    public void setActualEndTime(Date actualEndTime){
+    public void setActualEndTime(LocalTime actualEndTime){
         this.actualEndTime = actualEndTime;
     }
 
-    public Date getStartTime(){
+    public LocalTime getStartTime(){
         return startTime;
     }
 
-    public void setStartTime(Date startTime){
+    public void setStartTime(LocalTime startTime){
         this.startTime = startTime;
     }
 }
