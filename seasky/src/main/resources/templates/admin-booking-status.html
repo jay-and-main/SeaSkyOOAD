@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Status Management - SeaSky Logistics</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .background {
+            background-image: url('/Admin_login.jpg');
+            background-size: cover;
+            background-position: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: brightness(0.8);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 80px auto 20px;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            backdrop-filter: blur(8px);
+            color: black;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #333;
+            border-bottom: 3px solid #0070f3;
+            padding-bottom: 15px;
+            display: inline-block;
+        }
+        
+        .searchContainer {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .searchInput {
+            padding: 12px 15px 12px 45px;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            font-size: 16px;
+            color: black;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .searchInput:focus {
+            outline: none;
+            border-color: #0070f3;
+            box-shadow: 0 2px 8px rgba(0, 112, 243, 0.2);
+        }
+        
+        .searchIcon {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-220px);
+            top: 12px;
+            color: #666;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+        }
+        
+        .table th, .table td {
+            padding: 16px;
+            text-align: left;
+            color: black;
+        }
+        
+        .table th {
+            background-color: #f0f5ff;
+            font-weight: 600;
+            color: #0070f3;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        
+        .table tr {
+            transition: background-color 0.3s ease;
+        }
+        
+        .table tr:nth-child(even) {
+            background-color: rgba(240, 245, 255, 0.3);
+        }
+        
+        .table tr:hover {
+            background-color: rgba(0, 112, 243, 0.05);
+        }
+        
+        .statusCell {
+            text-transform: capitalize;
+            font-weight: 500;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .statusCell::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .statusCell.scheduled::before,
+        .statusCell.yet-to-board::before {
+            background-color: #f59e0b;
+        }
+        
+        .statusCell.onboarding::before {
+            background-color: #3b82f6;
+        }
+        
+        .statusCell.in-flight::before {
+            background-color: #8b5cf6;
+        }
+        
+        .statusCell.arrived-destination::before {
+            background-color: #10b981;
+        }
+        
+        .statusSelect {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: white;
+            color: #333;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .statusSelect:focus {
+            outline: none;
+            border-color: #0070f3;
+            box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
+        }
+        
+        .table th:nth-last-child(-n+2) {
+            width: 150px;
+        }
+        
+        .backButton {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: white;
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 10;
+            border: none;
+            color: #333;
+            font-size: 20px;
+        }
+        
+        .backButton:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            background-color: #f0f5ff;
+        }
+        
+        .infoPanel {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+        
+        .infoCard {
+            flex: 1;
+            background: linear-gradient(to right, #0070f3, #00a1ff);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .infoCard h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .infoCard p {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .infoCard:nth-child(2) {
+            background: linear-gradient(to right, #8b5cf6, #a78bfa);
+        }
+        
+        .infoCard:nth-child(3) {
+            background: linear-gradient(to right, #10b981, #4ade80);
+        }
+        
+        .infoCard:nth-child(4) {
+            background: linear-gradient(to right, #f59e0b, #fbbf24);
+        }
+        
+        .refreshBtn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: none;
+            border: none;
+            color: #0070f3;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .refreshBtn i {
+            transition: transform 0.5s ease;
+        }
+        
+        .refreshBtn:hover i {
+            transform: rotate(180deg);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 60px 15px 20px;
+                padding: 20px;
+            }
+            
+            .infoPanel {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .searchInput {
+                max-width: 100%;
+            }
+            
+            .searchIcon {
+                left: 20px;
+                transform: none;
+            }
+            
+            .table {
+                font-size: 14px;
+            }
+            
+            .table th, .table td {
+                padding: 10px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    
+    <button class="backButton" onclick="window.location.href='/admin/home'">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+    
+    <div class="container">
+        <h1 class="title">Flight Booking Status Management</h1>
+        
+        <div class="infoPanel">
+            <div class="infoCard">
+                <h3>Total Bookings</h3>
+                <p id="totalBookings">0</p>
+            </div>
+            <div class="infoCard">
+                <h3>In Flight</h3>
+                <p id="inFlightCount">0</p>
+            </div>
+            <div class="infoCard">
+                <h3>Arrived</h3>
+                <p id="arrivedCount">0</p>
+            </div>
+            <div class="infoCard">
+                <h3>Scheduled</h3>
+                <p id="scheduledCount">0</p>
+            </div>
+        </div>
+        
+        <div class="searchContainer">
+            <i class="fas fa-search searchIcon"></i>
+            <input
+                type="text"
+                id="passportSearch"
+                placeholder="Search by Passport Number"
+                class="searchInput"
+            />
+        </div>
+        
+        <button class="refreshBtn">
+            <i class="fas fa-sync-alt"></i> Refresh Data
+        </button>
+        
+        <table class="table" id="travelLogTable">
+            <thead>
+                <tr>
+                    <th>Passport Number</th>
+                    <th>Origin</th>
+                    <th>Destination</th>
+                    <th>Travel Date</th>
+                    <th>Current Status</th>
+                    <th>Update Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Sample data - in a real application, this would come from the server
+        const travelLogs = [
+            {
+                logId: "TL001",
+                passportNumber: "P123456",
+                origin: "New York",
+                destination: "London",
+                date: "2025-03-15",
+                travelStatus: "yet to board"
+            },
+            {
+                logId: "TL002",
+                passportNumber: "P789012",
+                origin: "Tokyo",
+                destination: "Sydney",
+                date: "2025-03-12",
+                travelStatus: "onboarding"
+            },
+            {
+                logId: "TL003",
+                passportNumber: "P345678",
+                origin: "Paris",
+                destination: "Berlin",
+                date: "2025-03-14",
+                travelStatus: "in flight"
+            },
+            {
+                logId: "TL004",
+                passportNumber: "P901234",
+                origin: "Mumbai",
+                destination: "Dubai",
+                date: "2025-03-11",
+                travelStatus: "arrived destination"
+            },
+            {
+                logId: "TL005",
+                passportNumber: "P567890",
+                origin: "Los Angeles",
+                destination: "Toronto",
+                date: "2025-03-18",
+                travelStatus: "yet to board"
+            }
+        ];
+
+        // Function to populate table and update status counters
+        function populateTravelLogTable(logs) {
+            const tableBody = document.querySelector("#travelLogTable tbody");
+            tableBody.innerHTML = "";
+            
+            // Update status counts
+            let inFlightCount = 0;
+            let arrivedCount = 0;
+            let scheduledCount = 0;
+            
+            logs.forEach(log => {
+                // Count by status
+                if (log.travelStatus === "in flight") inFlightCount++;
+                else if (log.travelStatus === "arrived destination") arrivedCount++;
+                else scheduledCount++;
+                
+                // Create table row
+                const row = document.createElement("tr");
+                
+                // Prepare status cell class
+                const statusClass = log.travelStatus.replace(/\s+/g, '-');
+                
+                row.innerHTML = `
+                    <td>${log.passportNumber}</td>
+                    <td>${log.origin}</td>
+                    <td>${log.destination}</td>
+                    <td>${formatDate(log.date)}</td>
+                    <td class="statusCell ${statusClass}">${log.travelStatus}</td>
+                    <td>
+                        <select class="statusSelect" data-log-id="${log.logId}">
+                            <option value="yet to board" ${log.travelStatus === "yet to board" ? 'selected' : ''}>Yet to Board</option>
+                            <option value="onboarding" ${log.travelStatus === "onboarding" ? 'selected' : ''}>Onboarding</option>
+                            <option value="in flight" ${log.travelStatus === "in flight" ? 'selected' : ''}>In Flight</option>
+                            <option value="arrived destination" ${log.travelStatus === "arrived destination" ? 'selected' : ''}>Arrived Destination</option>
+                        </select>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Update counts in info panel
+            document.getElementById('totalBookings').textContent = logs.length;
+            document.getElementById('inFlightCount').textContent = inFlightCount;
+            document.getElementById('arrivedCount').textContent = arrivedCount;
+            document.getElementById('scheduledCount').textContent = scheduledCount;
+            
+            // Add event listeners to status selects
+            document.querySelectorAll('.statusSelect').forEach(select => {
+                select.addEventListener('change', function() {
+                    const logId = this.getAttribute('data-log-id');
+                    const newStatus = this.value;
+                    updateTravelStatus(logId, newStatus);
+                });
+            });
+        }
+        
+        // Format date for better readability
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+        
+        // Function to update travel status
+        function updateTravelStatus(logId, newStatus) {
+            // Update the local data
+            const logIndex = travelLogs.findIndex(log => log.logId === logId);
+            if (logIndex !== -1) {
+                travelLogs[logIndex].travelStatus = newStatus;
+                
+                // In a real app, you would send an API request
+                console.log(`Updating log ${logId} status to ${newStatus}`);
+                
+                // Update status cell styling
+                const row = document.querySelector(`[data-log-id="${logId}"]`).closest('tr');
+                const statusCell = row.querySelector('.statusCell');
+                statusCell.textContent = newStatus;
+                
+                // Reset class and add new status class
+                statusCell.className = "statusCell";
+                statusCell.classList.add(newStatus.replace(/\s+/g, '-'));
+                
+                // Refresh table to update counts
+                populateTravelLogTable(filteredLogs);
+            }
+        }
+        
+        // Function to filter logs by passport number
+        function filterLogsByPassport(logs, searchText) {
+            if (!searchText.trim()) return logs;
+            return logs.filter(log => 
+                log.passportNumber.toLowerCase().includes(searchText.toLowerCase())
+            );
+        }
+        
+        // Initialize with all logs
+        let filteredLogs = [...travelLogs];
+        
+        // Set up search input event listener
+        document.getElementById('passportSearch').addEventListener('input', function() {
+            const searchText = this.value;
+            filteredLogs = filterLogsByPassport(travelLogs, searchText);
+            populateTravelLogTable(filteredLogs);
+        });
+        
+        // Set up refresh button
+        document.querySelector('.refreshBtn').addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            icon.style.transition = 'transform 1s ease';
+            icon.style.transform = 'rotate(360deg)';
+            
+            // Simulate data refresh
+            setTimeout(() => {
+                populateTravelLogTable(filteredLogs);
+                icon.style.transition = 'none';
+                icon.style.transform = 'rotate(0)';
+                
+                // Show a notification
+                alert('Data refreshed successfully!');
+            }, 1000);
+        });
+        
+        // Initialize table on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            populateTravelLogTable(travelLogs);
+        });
+        
+        // Initialize immediately
+        populateTravelLogTable(travelLogs);
+    </script>
+</body>
+</html>

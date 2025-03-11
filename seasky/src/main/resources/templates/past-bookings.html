@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Past Bookings & Shipments - SeaSky Logistics</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        
+        .container {
+            background-image: url('/Small-Islands-Header-Image-Web.jpg');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            position: relative;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%);
+            z-index: 0;
+        }
+        
+        .content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            color: white;
+            margin-bottom: 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.8rem;
+            color: white;
+            margin: 40px 0 20px;
+            font-weight: 500;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .error {
+            background-color: rgba(255, 0, 0, 0.1);
+            border-left: 5px solid #ff3333;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .error i {
+            margin-right: 10px;
+            font-size: 20px;
+            color: #ff3333;
+        }
+        
+        .tableSection {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .tableHeader {
+            background: linear-gradient(135deg, #0070f3, #00a1ff);
+            padding: 15px 20px;
+            color: white;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tableHeader i {
+            margin-right: 10px;
+        }
+        
+        .tableCount {
+            font-size: 0.9rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        
+        .tableWrapper {
+            padding: 15px;
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.95rem;
+        }
+        
+        .table th {
+            background-color: #f0f5ff;
+            color: #0070f3;
+            font-weight: 600;
+            padding: 15px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table td {
+            padding: 15px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .table tr {
+            transition: background-color 0.2s;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f5f9ff;
+        }
+        
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        
+        .table td[colspan] {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            padding: 25px;
+        }
+        
+        .emptyState {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .emptyState i {
+            font-size: 3rem;
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+        
+        .emptyText {
+            font-size: 1.1rem;
+            margin: 5px 0;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .badge-air {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+        
+        .badge-sea {
+            background-color: #d1fae5;
+            color: #047857;
+        }
+        
+        .badge-land {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 20px 0;
+            font-size: 0.9rem;
+        }
+        
+        .headerNav {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+        
+        .backButton {
+            background-color: white;
+            color: #333;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .backButton:hover {
+            transform: scale(1.1);
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 1.5rem;
+            }
+            
+            .tableHeader {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .tableCount {
+                align-self: flex-start;
+            }
+            
+            .table th, .table td {
+                padding: 10px 8px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="headerNav">
+            <button class="backButton" onclick="window.location.href='/'">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+        </div>
+        
+        <div class="content">
+            <div class="header">
+                <h1 class="title">Your Travel History</h1>
+            </div>
+            
+            <!-- Error message (hidden by default) -->
+            <div class="error" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorMessage">Failed to load booking data. Please try again later.</span>
+            </div>
+            
+            <!-- Past Bookings Table -->
+            <div class="tableSection">
+                <div class="tableHeader">
+                    <div>
+                        <i class="fas fa-plane"></i>
+                        <span>Past Bookings</span>
+                    </div>
+                    <span class="tableCount" id="bookingsCount">0 records</span>
+                </div>
+                <div class="tableWrapper">
+                    <table class="table" id="bookingsTable">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Origin</th>
+                                <th>Destination</th>
+                                <th>Date</th>
+                                <th>Transport</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table content will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Past Shipments Table -->
+            <h2 class="subtitle">Past Shipments</h2>
+            <div class="tableSection">
+                <div class="tableHeader">
+                    <div>
+                        <i class="fas fa-shipping-fast"></i>
+                        <span>Past Shipments</span>
+                    </div>
+                    <span class="tableCount" id="shipmentsCount">0 records</span>
+                </div>
+                <div class="tableWrapper">
+                    <table class="table" id="shipmentsTable">
+                        <thead>
+                            <tr>
+                                <th>Shipment ID</th>
+                                <th>Origin</th>
+                                <th>Destination</th>
+                                <th>Transport</th>
+                                <th>ETA</th>
+                                <th>Actual End Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table content will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="footer">
+                &copy; 2025 SeaSky Logistics | Need help with your bookings? Contact us at support@seasky.com
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sample data (in a real app, this would come from your API)
+            const bookings = [
+                {
+                    bookingId: "BK10045",
+                    origin: "New York, USA",
+                    destination: "London, UK",
+                    date: "2025-01-15",
+                    modeOfTransport: "Air",
+                    startTime: "08:30 AM",
+                    actualEndTime: "9:45 PM"
+                },
+                {
+                    bookingId: "BK10089",
+                    origin: "Tokyo, Japan",
+                    destination: "Sydney, Australia",
+                    date: "2024-12-03",
+                    modeOfTransport: "Sea",
+                    startTime: "10:15 AM",
+                    actualEndTime: "2:30 PM (Dec 10)"
+                },
+                {
+                    bookingId: "BK10124",
+                    origin: "Dubai, UAE",
+                    destination: "Paris, France",
+                    date: "2024-11-22",
+                    modeOfTransport: "Air",
+                    startTime: "11:45 PM",
+                    actualEndTime: "5:20 AM (Nov 23)"
+                }
+            ];
+            
+            const shipments = [
+                {
+                    shipmentId: "SH5697",
+                    origin: "Shanghai, China",
+                    destination: "Hamburg, Germany",
+                    modeOfTransport: "Sea",
+                    eta: "2024-12-28",
+                    actualEndTime: "2024-12-30"
+                },
+                {
+                    shipmentId: "SH5712",
+                    origin: "Los Angeles, USA",
+                    destination: "Mexico City, Mexico",
+                    modeOfTransport: "Land",
+                    eta: "2025-01-05",
+                    actualEndTime: "2025-01-06"
+                }
+            ];
+            
+            // Function to format dates
+            function formatDate(dateString) {
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString(undefined, options);
+            }
+            
+            // Function to create a transport badge
+            function getTransportBadge(mode) {
+                const lowerMode = mode.toLowerCase();
+                let badgeClass = 'badge';
+                
+                if (lowerMode.includes('air')) {
+                    badgeClass += ' badge-air';
+                } else if (lowerMode.includes('sea')) {
+                    badgeClass += ' badge-sea';
+                } else {
+                    badgeClass += ' badge-land';
+                }
+                
+                return `<span class="${badgeClass}">${mode}</span>`;
+            }
+            
+            // Populate bookings table
+            function populateBookingsTable() {
+                const tableBody = document.querySelector("#bookingsTable tbody");
+                document.getElementById('bookingsCount').textContent = `${bookings.length} records`;
+                
+                if (bookings.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="7">
+                                <div class="emptyState">
+                                    <i class="fas fa-calendar-xmark"></i>
+                                    <p class="emptyText">No past bookings available.</p>
+                                    <p class="emptyText">Your completed travel bookings will appear here.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tableBody.innerHTML = '';
+                bookings.forEach(booking => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td><strong>${booking.bookingId}</strong></td>
+                        <td>${booking.origin}</td>
+                        <td>${booking.destination}</td>
+                        <td>${formatDate(booking.date)}</td>
+                        <td>${getTransportBadge(booking.modeOfTransport)}</td>
+                        <td>${booking.startTime}</td>
+                        <td>${booking.actualEndTime}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+            
+            // Populate shipments table
+            function populateShipmentsTable() {
+                const tableBody = document.querySelector("#shipmentsTable tbody");
+                document.getElementById('shipmentsCount').textContent = `${shipments.length} records`;
+                
+                if (shipments.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6">
+                                <div class="emptyState">
+                                    <i class="fas fa-box-open"></i>
+                                    <p class="emptyText">No past shipments available.</p>
+                                    <p class="emptyText">Your completed shipments will appear here.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tableBody.innerHTML = '';
+                shipments.forEach(shipment => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td><strong>${shipment.shipmentId}</strong></td>
+                        <td>${shipment.origin}</td>
+                        <td>${shipment.destination}</td>
+                        <td>${getTransportBadge(shipment.modeOfTransport)}</td>
+                        <td>${formatDate(shipment.eta)}</td>
+                        <td>${formatDate(shipment.actualEndTime)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+            
+            // Initialize tables
+            populateBookingsTable();
+            populateShipmentsTable();
+            
+            // Simulate loading error (uncomment to test)
+            // document.querySelector('.error').style.display = 'flex';
+            
+            // Add some simple animations
+            const sections = document.querySelectorAll('.tableSection');
+            sections.forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    section.style.transition = 'all 0.5s ease';
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, 300 + (index * 200));
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - SeaSky Logistics</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            background-image: url('/Admin_login.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;  
+            position: relative;
+        }
+        
+        .loginBox {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            width: 400px;
+            z-index: 1;
+        }
+        
+        .loginBox h1 {
+            margin-bottom: 40px;
+            font-size: 18px;
+            color: #000;
+        }
+        
+        .inputGroup {
+            margin-bottom: 40px;
+        }
+        
+        .inputGroup label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: normal;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .inputGroup input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .loginBox button {
+            width: 100%;
+            padding: 5px;
+            background-color: #0070f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .loginBox button:hover {
+            background-color: #005bb5;
+        }
+        
+        .errorMessage {
+            color: red;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="loginBox">
+            <h1>Admin Login</h1>
+            <form id="adminLoginForm">
+                <div class="inputGroup">
+                    <label for="email">Admin Email ID</label>
+                    <input
+                        type="email"
+                        id="email"
+                        required
+                    />
+                </div>
+                <div class="inputGroup">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        required
+                    />
+                </div>
+                <div id="errorMessage" class="errorMessage" style="display: none;"></div>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Log the values (similar to the React component)
+            console.log('Email:', email);
+            console.log('Password:', password);
+            
+            // Here you would typically make an AJAX request to authenticate
+            // For demo purposes, let's simulate a check for the admin credentials
+            if (email === 'admin@seasky.com' && password === 'admin123') {
+                // Successful login
+                window.location.href = '/admin/dashboard';
+            } else {
+                // Failed login
+                errorMessage.textContent = 'Invalid email or password';
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html> 

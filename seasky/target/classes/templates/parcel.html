@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ship Your Parcel - SeaSky Logistics</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .container {
+            background-image: url('/Small-Islands-Header-Image-Web.jpg');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 100%);
+            z-index: 0;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-weight: 600;
+        }
+        
+        .form {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 90%;
+            max-width: 1200px;
+        }
+        
+        .column {
+            flex: 1;
+            min-width: 300px;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .column h2 {
+            color: #4ade80;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+        }
+        
+        .formGroup {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .formGroup label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            letter-spacing: 0.5px;
+        }
+        
+        .formGroup input,
+        .formGroup select,
+        .formGroup textarea {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            color: #333;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .formGroup input:focus,
+        .formGroup select:focus,
+        .formGroup textarea:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #0070f3;
+            background-color: #fff;
+        }
+        
+        .formGroup input[type="date"] {
+            padding: 10px 12px;
+        }
+        
+        .formGroup textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #0070f3 0%, #00a1ff 100%);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .button:hover {
+            background: linear-gradient(135deg, #005bb5 0%, #0089d4 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 0.5rem;
+            color: #4ade80;
+        }
+        
+        @media (max-width: 768px) {
+            .form {
+                padding: 15px;
+            }
+            
+            .column {
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        /* Add some animated details */
+        .waves {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 15vh;
+            margin-bottom: -7px;
+            min-height: 100px;
+            max-height: 150px;
+            z-index: 0;
+        }
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-repeat: repeat-x;
+            background-position: bottom;
+            transform: translateX(0) translateY(0);
+        }
+
+        .wave1 {
+            background-size: 50% 100px;
+            opacity: 0.3;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3E%3Cpath d='M800 56.9c-155.5 0-204.9-50-405.5-49.9-200 0-250 49.9-394.5 49.9v31.8h800v-31.8z' fill='%23ffffff'/%3E%3C/svg%3E");
+            animation: wave 7s -3s linear infinite;
+        }
+
+        .wave2 {
+            background-size: 50% 120px;
+            opacity: 0.5;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3E%3Cpath d='M800 56.9c-155.5 0-204.9-50-405.5-49.9-200 0-250 49.9-394.5 49.9v31.8h800v-31.8z' fill='%23ffffff'/%3E%3C/svg%3E");
+            animation: wave 10s linear reverse infinite;
+        }
+
+        .wave3 {
+            background-size: 50% 100px;
+            opacity: 0.2;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3E%3Cpath d='M800 56.9c-155.5 0-204.9-50-405.5-49.9-200 0-250 49.9-394.5 49.9v31.8h800v-31.8z' fill='%23ffffff'/%3E%3C/svg%3E");
+            animation: wave 15s -5s linear infinite;
+        }
+
+        @keyframes wave {
+            0% {
+                transform: translateX(0) translateZ(0);
+            }
+            50% {
+                transform: translateX(-25%) translateZ(0);
+            }
+            100% {
+                transform: translateX(-50%) translateZ(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-ship"></i> SeaSky Logistics
+        </div>
+        <div>
+            <a href="/" style="color: white; text-decoration: none; margin-right: 20px;">Home</a>
+            <a href="/login" style="color: white; text-decoration: none;">Account</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="waves">
+            <div class="wave wave1"></div>
+            <div class="wave wave2"></div>
+            <div class="wave wave3"></div>
+        </div>
+        
+        <h1>Ship Your Parcel</h1>
+        <form id="parcelForm" class="form">
+            <div class="column">
+                <h2><i class="fas fa-map-marker-alt"></i> Sender Address</h2>
+                <div class="formGroup">
+                    <label for="senderStreet">Street:</label>
+                    <input
+                        type="text"
+                        id="senderStreet"
+                        name="senderStreet"
+                        required
+                        placeholder="Enter street address"
+                    />
+                </div>
+                <div class="formGroup">
+                    <label for="senderCity">City:</label>
+                    <input
+                        type="text"
+                        id="senderCity"
+                        name="senderCity"
+                        required
+                        placeholder="Enter city"
+                    />
+                </div>
+                <div class="formGroup">
+                    <label for="senderState">State/Province:</label>
+                    <input
+                        type="text"
+                        id="senderState"
+                        name="senderState"
+                        required
+                        placeholder="Enter state or province"
+                    />
+                </div>
+                <div class="formGroup">
+                    <label for="senderCountry">Country:</label>
+                    <input
+                        type="text"
+                        id="senderCountry"
+                        name="senderCountry"
+                        required
+                        placeholder="Enter country"
+                    />
+                </div>
+            </div>
+
+            <div class="column">
+                <h2><i class="fas fa-box"></i> Package Details</h2>
+                <div class="formGroup">
+                    <label for="weight">Weight (kg):</label>
+                    <input
+                        type="number"
+                        id="weight"
+                        name="weight"
+                        step="0.01"
+                        min="0.01"
+                        required
+                        placeholder="Enter weight"
+                    />
+                </div>
+
+                <div class="formGroup">
+                    <label for="volume">Volume (m³):</label>
+                    <input
+                        type="number"
+                        id="volume"
+                        name="volume"
+                        step="0.01"
+                        required
+                        placeholder="Enter volume"
+                    />
+                </div>
+
+                <div class="formGroup">
+                    <label for="isFragile">Fragile Item?</label>
+                    <select
+                        id="isFragile"
+                        name="isFragile"
+                        required
+                    >
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                </div>
+
+                <div class="formGroup">
+                    <label for="description">Description:</label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        required
+                        placeholder="Enter package description"
+                    ></textarea>
+                </div>
+
+                <div class="formGroup">
+                    <label for="category">Category:</label>
+                    <select
+                        id="category"
+                        name="category"
+                        required
+                    >
+                        <option value="" disabled selected>Select a category</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Clothing & Apparel">Clothing & Apparel</option>
+                        <option value="Food & Beverages">Food & Beverages</option>
+                        <option value="Chemicals & Hazardous Materials">Chemicals & Hazardous Materials</option>
+                        <option value="Automotive Parts">Automotive Parts</option>
+                        <option value="Medical Supplies & Equipment">Medical Supplies & Equipment</option>
+                        <option value="Textiles & Fabrics">Textiles & Fabrics</option>
+                        <option value="Toys & Games">Toys & Games</option>
+                        <option value="Books & Stationery">Books & Stationery</option>
+                        <option value="Precious Metals & Gems">Precious Metals & Gems</option>
+                        <option value="Live Animals">Live Animals</option>
+                        <option value="Plants & Agricultural Products">Plants & Agricultural Products</option>
+                        <option value="Pharmaceuticals">Pharmaceuticals</option>
+                        <option value="Machinery & Industrial Equipment">Machinery & Industrial Equipment</option>
+                        <option value="Artwork & Antiques">Artwork & Antiques</option>
+                        <option value="Sports Equipment">Sports Equipment</option>
+                        <option value="Construction Materials">Construction Materials</option>
+                        <option value="Cosmetics & Personal Care Products">Cosmetics & Personal Care Products</option>
+                    </select>
+                </div>
+
+                <div class="formGroup">
+                    <label for="shippingDate">Shipping Date:</label>
+                    <input
+                        type="date"
+                        id="shippingDate"
+                        name="shippingDate"
+                        required
+                    />
+                </div>
+
+                <button type="submit" class="button">
+                    <i class="fas fa-search"></i> View Shipping Options
+                </button>
+            </div>
+            
+            <div class="column">
+                <h2><i class="fas fa-user"></i> Receiver Details</h2>
+                <div class="formGroup">
+                    <label for="receiverfName">First Name:</label>
+                    <input
+                        type="text"
+                        id="receiverfName"
+                        name="receiverfName"
+                        required
+                        placeholder="Enter first name"
+                    />
+                </div>
+                <div class="formGroup">
+                    <label for="receiverlName">Last Name:</label>
+                    <input
+                        type="text"
+                        id="receiverlName"
+                        name="receiverlName"
+                        required
+                        placeholder="Enter last name"
+                    />
+                </div>
+                <div class="formGroup">
+                    <label for="receiverStreet">Street:</label>
+                    <input
+                        type="text"
+                        id="receiverStreet"
+                        name="receiverStreet"
+                        required
+                        placeholder="Enter street address"
+                    />
+                </div>
+                <div class="formGroup">
+                    <label for="receiverCity">City:</label>
+                    <input
+                        type="text"
+                        id="receiverCity"
+                        name="receiverCity"
+                        required
+                        placeholder="Enter city"
+                    />
+                </div>
+                <div class="formGroup">
+                    <label for="receiverState">State/Province:</label>
+                    <input
+                        type="text"
+                        id="receiverState"
+                        name="receiverState"
+                        required
+                        placeholder="Enter state or province"
+                    />
+                </div>
+                <div class="formGroup">
+                    <label for="receiverCountry">Country:</label>
+                    <input
+                        type="text"
+                        id="receiverCountry"
+                        name="receiverCountry"
+                        required
+                        placeholder="Enter country"
+                    />
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('parcelForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get all form values
+            const senderStreet = document.getElementById('senderStreet').value;
+            const senderCity = document.getElementById('senderCity').value;
+            const senderState = document.getElementById('senderState').value;
+            const senderCountry = document.getElementById('senderCountry').value;
+            
+            const receiverfName = document.getElementById('receiverfName').value;
+            const receiverlName = document.getElementById('receiverlName').value;
+            const receiverStreet = document.getElementById('receiverStreet').value;
+            const receiverCity = document.getElementById('receiverCity').value;
+            const receiverState = document.getElementById('receiverState').value;
+            const receiverCountry = document.getElementById('receiverCountry').value;
+            
+            const weight = document.getElementById('weight').value;
+            const volume = document.getElementById('volume').value;
+            const isFragile = document.getElementById('isFragile').value;
+            const description = document.getElementById('description').value;
+            const category = document.getElementById('category').value;
+            const shippingDate = document.getElementById('shippingDate').value;
+            
+            // Build the query string
+            const queryParams = new URLSearchParams({
+                senderStreet, senderCity, senderState, senderCountry,
+                receiverfName, receiverlName, receiverStreet, receiverCity, receiverState, receiverCountry,
+                weight, volume, isFragile, shippingDate, description, category
+            }).toString();
+            
+            // Redirect to suggestions page
+            window.location.href = `/parcel-suggestions?${queryParams}`;
+        });
+        
+        // Add animation to form sections
+        document.addEventListener('DOMContentLoaded', function() {
+            const columns = document.querySelectorAll('.column');
+            columns.forEach((column, index) => {
+                column.style.opacity = '0';
+                column.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    column.style.transition = 'all 0.5s ease';
+                    column.style.opacity = '1';
+                    column.style.transform = 'translateY(0)';
+                }, 200 + (index * 200));
+            });
+        });
+        
+        // Set minimum date for shipping date as today
+        const today = new Date();
+        const dd = String(today.getDate()).padStart(2, '0');
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const yyyy = today.getFullYear();
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('shippingDate').min = todayStr;
+    </script>
+</body>
+</html>

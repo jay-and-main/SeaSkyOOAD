@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Suggestions - SeaSky Logistics</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            background-image: url('/Small-Islands-Header-Image-Web.jpg');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .form {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .formGroup {
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .formGroup label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .formGroup input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            color: black;
+            box-sizing: border-box;
+        }
+        
+        .button {
+            background-color: #0070f3;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .button:hover {
+            background-color: #0051a8;
+        }
+        
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+            width: 100%;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            color: black;
+            padding: 20px;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            width: 300px;
+            text-align: left;
+        }
+        
+        h1 {
+            color: white;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 15px 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .card h2 {
+            margin-top: 0;
+            color: #0070f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Flight Suggestions</h1>
+        
+        <div class="suggestions" id="suggestionsList">
+            <!-- Flight suggestion cards will be populated here -->
+            <div class="card">
+                <h2>American Airlines</h2>
+                <p>From: New York</p>
+                <p>To: London</p>
+                <p>Date: 2025-03-20</p>
+                <p>Passengers: 1</p>
+                <p>Price per ticket: $450</p>
+                <button class="button" onclick="handleSelect('AA123')">Select</button>
+            </div>
+            
+            <div class="card">
+                <h2>British Airways</h2>
+                <p>From: New York</p>
+                <p>To: London</p>
+                <p>Date: 2025-03-20</p>
+                <p>Passengers: 1</p>
+                <p>Price per ticket: $520</p>
+                <button class="button" onclick="handleSelect('BA456')">Select</button>
+            </div>
+            
+            <div class="card">
+                <h2>Delta Airlines</h2>
+                <p>From: New York</p>
+                <p>To: London</p>
+                <p>Date: 2025-03-20</p>
+                <p>Passengers: 1</p>
+                <p>Price per ticket: $485</p>
+                <button class="button" onclick="handleSelect('DL789')">Select</button>
+            </div>
+        </div>
+        
+        <div class="formGroup">
+            <label for="passportNumber">Passport Number:</label>
+            <input
+                type="text"
+                id="passportNumber"
+                required
+                placeholder="Enter your passport number"
+            />
+            <button class="button" style="margin-top: 10px;" onclick="confirmBooking()">Confirm Booking</button>
+        </div>
+    </div>
+
+    <script>
+        // Get query parameters from URL
+        const params = new URLSearchParams(window.location.search);
+        const fromCity = params.get('from') || 'New York';
+        const toCity = params.get('to') || 'London';
+        const travelDate = params.get('date') || '2025-03-20';
+        const passengers = params.get('passengers') || '1';
+        
+        // Update the cards with the actual search parameters
+        document.querySelectorAll('.card').forEach(card => {
+            card.querySelectorAll('p')[0].textContent = `From: ${fromCity}`;
+            card.querySelectorAll('p')[1].textContent = `To: ${toCity}`;
+            card.querySelectorAll('p')[2].textContent = `Date: ${travelDate}`;
+            card.querySelectorAll('p')[3].textContent = `Passengers: ${passengers}`;
+        });
+        
+        // Selected flight ID
+        let selectedFlightId = null;
+        
+        function handleSelect(flightId) {
+            selectedFlightId = flightId;
+            
+            // Highlight the selected card
+            document.querySelectorAll('.card').forEach(card => {
+                const button = card.querySelector('button');
+                if (button.getAttribute('onclick').includes(flightId)) {
+                    card.style.border = '2px solid #0070f3';
+                    button.textContent = 'Selected';
+                } else {
+                    card.style.border = 'none';
+                    button.textContent = 'Select';
+                }
+            });
+        }
+        
+        function confirmBooking() {
+            const passportNumber = document.getElementById('passportNumber').value;
+            
+            if (!passportNumber) {
+                alert('Please enter your passport number');
+                return;
+            }
+            
+            if (!selectedFlightId) {
+                alert('Please select a flight');
+                return;
+            }
+            
+            // In a real app, we would send this data to the server
+            alert(`Booking confirmed!\nFlight: ${selectedFlightId}\nPassport: ${passportNumber}`);
+            
+            // Redirect to a confirmation page
+            // window.location.href = `/booking-confirmation?flightId=${selectedFlightId}&passport=${passportNumber}`;
+        }
+    </script>
+</body>
+</html>

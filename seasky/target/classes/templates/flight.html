@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Your Flight - SeaSky Logistics</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            background-image: url('/Small-Islands-Header-Image-Web.jpg');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .form {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            width: 80%;
+            max-width: 500px;
+        }
+        
+        .formGroup {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        
+        .formGroup label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .formGroup input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            color: black;
+            box-sizing: border-box;
+        }
+        
+        .button {
+            background-color: #0070f3;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        
+        .button:hover {
+            background-color: #0051a8;
+        }
+        
+        h1 {
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Book Your Flight</h1>
+        <form id="flightSearchForm" class="form">
+            <div class="formGroup">
+                <label for="fromCity">From:</label>
+                <input
+                    type="text"
+                    id="fromCity"
+                    required
+                    placeholder="Enter departure city"
+                />
+            </div>
+
+            <div class="formGroup">
+                <label for="toCity">To:</label>
+                <input
+                    type="text"
+                    id="toCity"
+                    required
+                    placeholder="Enter destination city"
+                />
+            </div>
+
+            <div class="formGroup">
+                <label for="travelDate">Travel Date:</label>
+                <input
+                    type="date"
+                    id="travelDate"
+                    required
+                />
+            </div>
+
+            <button type="submit" class="button">
+                Search Flights
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('flightSearchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fromCity = document.getElementById('fromCity').value;
+            const toCity = document.getElementById('toCity').value;
+            const travelDate = document.getElementById('travelDate').value;
+            
+            console.log('Flight search:', { fromCity, toCity, travelDate });
+            
+            // In a real application, you would send this data to a server
+            // For now, just show an alert
+            alert(`Searching for flights from ${fromCity} to ${toCity} on ${travelDate}`);
+            
+            // You could redirect to a results page like this:
+            // window.location.href = `/flight-results?from=${fromCity}&to=${toCity}&date=${travelDate}`;
+        });
+    </script>
+</body>
+</html>

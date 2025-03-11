@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipment Status Management - SeaSky Logistics</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            backdrop-filter: blur(5px);
+            color: black;
+        }
+
+        .background {
+            background-image: url('/Admin_login.jpg');
+            background-size: cover;
+            background-position: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .searchContainer {
+            margin-bottom: 20px;
+        }
+
+        .searchInput {
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            color: black;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .table th, .table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            color: black;
+        }
+
+        .table th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        .table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .statusCell {
+            text-transform: capitalize;
+            font-weight: 500;
+        }
+
+        .statusSelect {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+        }
+
+        .table th:nth-last-child(-n+2) {
+            width: 150px;
+        }
+
+        .backButton {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            z-index: 2;
+        }
+        
+        .backButton:hover {
+            transform: scale(1.1);
+        }
+        
+        .verifyButton {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .verifyButton:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    
+    <a href="/admin" class="backButton">
+        <span style="font-size: 20px; font-weight: bold;">←</span>
+    </a>
+    
+    <div class="container">
+        <h1 class="title">Travel Log Records</h1>
+        <div class="searchContainer">
+            <input
+                type="text"
+                id="shipmentSearch"
+                placeholder="Search by Shipment ID"
+                class="searchInput"
+            />
+        </div>
+        <table class="table" id="travelLogTable">
+            <thead>
+                <tr>
+                    <th>Shipment ID</th>
+                    <th>Origin</th>
+                    <th>Destination</th>
+                    <th>Travel Date</th>
+                    <th>Current Status</th>
+                    <th>Update Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="container">
+        <h1 class="title">Regulation Status Update</h1>
+        <div class="searchContainer">
+            <input
+                type="text"
+                id="regulationSearch"
+                placeholder="Search by Shipment ID"
+                class="searchInput"
+            />
+        </div>
+        <table class="table" id="regulationTable">
+            <thead>
+                <tr>
+                    <th>Shipment ID</th>
+                    <th>Origin</th>
+                    <th>Destination</th>
+                    <th>Travel Date</th>
+                    <th>Current Status</th>
+                    <th>Category</th>
+                    <th>Verify</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Sample data - in a real application, this would come from the server
+        const travelLogs = [
+            {
+                logId: "TL001",
+                shipmentId: "SH100",
+                origin: "New York",
+                destination: "London",
+                date: "2023-06-15",
+                travelStatus: "yet to be verified",
+                category: "Electronics"
+            },
+            {
+                logId: "TL002",
+                shipmentId: "SH101",
+                origin: "Tokyo",
+                destination: "Sydney",
+                date: "2023-06-18",
+                travelStatus: "in transit",
+                category: "Clothing"
+            },
+            {
+                logId: "TL003",
+                shipmentId: "SH102",
+                origin: "Paris",
+                destination: "Berlin",
+                date: "2023-06-20",
+                travelStatus: "waiting to be picked up",
+                category: "Books"
+            },
+            {
+                logId: "TL004",
+                shipmentId: "SH103",
+                origin: "Mumbai",
+                destination: "Dubai",
+                date: "2023-06-22",
+                travelStatus: "delivered",
+                category: "Food Items"
+            }
+        ];
+
+        // Function to populate tables
+        function populateTravelLogTable(logs) {
+            const tableBody = document.querySelector("#travelLogTable tbody");
+            tableBody.innerHTML = "";
+            
+            logs.forEach(log => {
+                const row = document.createElement("tr");
+                
+                row.innerHTML = `
+                    <td>${log.shipmentId}</td>
+                    <td>${log.origin}</td>
+                    <td>${log.destination}</td>
+                    <td>${log.date}</td>
+                    <td class="statusCell">${log.travelStatus}</td>
+                    <td>
+                        <select class="statusSelect" data-log-id="${log.logId}">
+                            <option value="yet to be verified" ${log.travelStatus === "yet to be verified" ? 'selected' : ''}>Yet to be Verified</option>
+                            <option value="waiting to be picked up" ${log.travelStatus === "waiting to be picked up" ? 'selected' : ''}>Waiting to be picked up</option>
+                            <option value="in transit" ${log.travelStatus === "in transit" ? 'selected' : ''}>In Transit</option>
+                            <option value="delivered" ${log.travelStatus === "delivered" ? 'selected' : ''}>Delivered</option>
+                        </select>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to status selects
+            document.querySelectorAll('.statusSelect').forEach(select => {
+                select.addEventListener('change', function() {
+                    const logId = this.getAttribute('data-log-id');
+                    const newStatus = this.value;
+                    updateTravelStatus(logId, newStatus);
+                });
+            });
+        }
+        
+        function populateRegulationTable(logs) {
+            const tableBody = document.querySelector("#regulationTable tbody");
+            tableBody.innerHTML = "";
+            
+            logs.forEach(log => {
+                const row = document.createElement("tr");
+                
+                row.innerHTML = `
+                    <td>${log.shipmentId}</td>
+                    <td>${log.origin}</td>
+                    <td>${log.destination}</td>
+                    <td>${log.date}</td>
+                    <td class="statusCell">${log.travelStatus}</td>
+                    <td>${log.category}</td>
+                    <td>
+                        <button class="verifyButton" data-log-id="${log.logId}">Verify</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to verify buttons
+            document.querySelectorAll('.verifyButton').forEach(button => {
+                button.addEventListener('click', function() {
+                    const logId = this.getAttribute('data-log-id');
+                    verifyShipment(logId);
+                });
+            });
+        }
+        
+        // Function to update travel status
+        function updateTravelStatus(logId, newStatus) {
+            console.log(`Updating log ${logId} status to ${newStatus}`);
+            
+            // Update the local data
+            const logIndex = travelLogs.findIndex(log => log.logId === logId);
+            if (logIndex !== -1) {
+                travelLogs[logIndex].travelStatus = newStatus;
+                
+                // In a real app, you would send an AJAX request to the server
+                // fetch(`/api/travel-log/${logId}`, {
+                //     method: 'PUT',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ Travel_Status: newStatus })
+                // });
+                
+                // Update the displayed status cell
+                const statusCells = document.querySelectorAll(`[data-log-id="${logId}"]`);
+                statusCells.forEach(select => {
+                    const row = select.closest('tr');
+                    if (row) {
+                        const statusCell = row.querySelector('.statusCell');
+                        if (statusCell) {
+                            statusCell.textContent = newStatus;
+                        }
+                    }
+                });
+                
+                refreshTables();
+            }
+        }
+        
+        // Function to verify shipment
+        function verifyShipment(logId) {
+            console.log(`Verifying shipment for log ${logId}`);
+            
+            // Update travel status to "waiting to be picked up"
+            updateTravelStatus(logId, "waiting to be picked up");
+            
+            // In a real app, you would update regulation status via AJAX
+            // fetch(`/api/goods/${logId}`, {
+            //     method: 'PUT',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ Regulation_Status: "Verified" })
+            // });
+            
+            alert(`Shipment ${logId} has been verified!`);
+        }
+        
+        // Function to filter logs by shipment ID
+        function filterLogsByShipmentId(logs, searchText) {
+            if (!searchText.trim()) return logs;
+            return logs.filter(log => log.shipmentId.toLowerCase().includes(searchText.toLowerCase()));
+        }
+        
+        // Function to refresh tables based on search
+        function refreshTables() {
+            const searchText = document.getElementById('shipmentSearch').value;
+            const regulationSearchText = document.getElementById('regulationSearch').value;
+            
+            const filteredLogs = filterLogsByShipmentId(travelLogs, searchText);
+            const filteredRegulationLogs = filterLogsByShipmentId(travelLogs, regulationSearchText);
+            
+            populateTravelLogTable(filteredLogs);
+            populateRegulationTable(filteredRegulationLogs);
+        }
+        
+        // Set up event listeners for search inputs
+        document.getElementById('shipmentSearch').addEventListener('input', refreshTables);
+        document.getElementById('regulationSearch').addEventListener('input', refreshTables);
+        
+        // Initialize tables on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshTables();
+        });
+        
+        // Initialize immediately
+        populateTravelLogTable(travelLogs);
+        populateRegulationTable(travelLogs);
+    </script>
+</body>
+</html>
