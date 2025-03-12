@@ -2,14 +2,13 @@ package com.project.seasky.models;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Document(collection = "users")
 public class User {
     @Id
     private String userId;
     private String password;
-    private long contactNumber;
+    private String contactNumber;
     private String firstName;
     private String lastName;
     private String email;
@@ -17,8 +16,8 @@ public class User {
     public User() {
     }
 
-    public User(String rawPassword, long contactNumber, String firstName, String lastName, String email) {
-        this.password = hashPassword(rawPassword);
+    public User(String rawPassword, String contactNumber, String firstName, String lastName, String email) {
+        this.password = rawPassword;
         this.contactNumber = contactNumber;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -38,14 +37,14 @@ public class User {
     }
 
     public void setPassword(String rawPassword) {
-        this.password = hashPassword(rawPassword);
+        this.password = rawPassword;
     }
 
-    public long getContactNumber() {
+    public String getContactNumber() {
         return contactNumber;
     }
 
-    public void setContactNumber(long contactNumber) {
+    public void setContactNumber(String contactNumber) {
         this.contactNumber = contactNumber;
     }
 
@@ -71,10 +70,5 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    private String hashPassword(String rawPassword){
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        return passwordEncoder.encode(rawPassword);
     }
 }

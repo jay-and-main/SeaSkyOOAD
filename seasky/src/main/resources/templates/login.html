@@ -128,7 +128,7 @@
         </div>
     </div>
 
-    <!-- <script>
+    <script>
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -137,7 +137,7 @@
             const errorMessage = document.getElementById('errorMessage');
             
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch('/users/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -158,6 +158,6 @@
                 errorMessage.style.display = 'block';
             }
         });
-    </script> -->
+    </script>
 </body>
 </html>

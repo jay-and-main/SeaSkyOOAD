@@ -1,11 +1,8 @@
 package com.project.seasky.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.List;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class ViewController {
@@ -22,5 +19,15 @@ public class ViewController {
     @GetMapping("/home")
     public String showHome() {
         return "index";
+    }
+
+    @GetMapping("/bookings")
+    public String showBookings() {
+        return "bookings";
+    }
+
+    @GetMapping("/error")
+    public String showError() {
+        return "error";
     }
 }
