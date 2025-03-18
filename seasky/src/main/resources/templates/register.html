@@ -155,41 +155,53 @@
 
     <script>
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const email = document.getElementById('email').value;
-            const contactNumber = document.getElementById('contact').value;
-            const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('errorMessage');
+    e.preventDefault();
+    
+    const firstName = document.getElementById('firstName').value;
+    const lastName = document.getElementById('lastName').value;
+    const email = document.getElementById('email').value;
+    const contactNumber = document.getElementById('contact').value;
+    const password = document.getElementById('password').value;
+    const errorMessage = document.getElementById('errorMessage');
 
-            console.log(firstName, lastName, email, contactNumber, password);
-            
-            try {
-                const response = await fetch('/users/create', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ firstName, lastName, email, contactNumber, password })
-                });
-                
-                const data = await response.json();
-                console.log(data);
-                console.log(response);
-                // window.location.href = '/';
-                
-                if (response.ok) {
-                    // Registration successful, redirect to login
-                    window.location.href = '/';
-                } else {
-                    errorMessage.textContent = data.message || 'Registration failed';
-                    errorMessage.style.display = 'block';
-                }
-            } catch (error) {
-                errorMessage.textContent = 'An error occurred. Please try again.';
-                errorMessage.style.display = 'block';
-            }
+    // Reset error message
+    errorMessage.style.display = 'none';
+    
+    try {
+        // First check if email already exists
+        const emailCheckResponse = await fetch(`/users/email/${email}`);
+        const emailExists = await emailCheckResponse.json();
+        
+        // If the response contains data (not an empty object), email already exists
+        if (emailExists && Object.keys(emailExists).length > 0) {
+            errorMessage.textContent = 'This email is already registered. Please use a different email or login.';
+            errorMessage.style.display = 'block';
+            return; // Stop the registration process
+        }
+        
+        // If email doesn't exist, proceed with registration
+        const response = await fetch('/users/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ firstName, lastName, email, contactNumber, password })
         });
+        
+        const data = await response.json();
+        console.log(data);
+        
+        if (response.ok) {
+            // Registration successful, redirect to login
+            window.location.href = '/';
+        } else {
+            errorMessage.textContent = data.message || 'Registration failed';
+            errorMessage.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        errorMessage.textContent = 'An error occurred. Please try again.';
+        errorMessage.style.display = 'block';
+    }
+});
     </script>
 </body>
 </html>
