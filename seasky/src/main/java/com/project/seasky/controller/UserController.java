@@ -25,7 +25,6 @@ public class UserController {
 
     @PostMapping("/create")
     public User createUser(@RequestBody User user) {
-        System.out.println(user.getContactNumber());
         return userRepository.save(user);
     }
 
