@@ -259,8 +259,7 @@
             <i class="fas fa-ship"></i> SeaSky Logistics
         </div>
         <div>
-            <a href="/" style="color: white; text-decoration: none; margin-right: 20px;">Home</a>
-            <a href="/login" style="color: white; text-decoration: none;">Account</a>
+            <a href="/home" style="color: white; text-decoration: none; margin-right: 20px;">Home</a>
         </div>
     </div>
 
@@ -500,15 +499,8 @@
             const category = document.getElementById('category').value;
             const shippingDate = document.getElementById('shippingDate').value;
             
-            // Build the query string
-            const queryParams = new URLSearchParams({
-                senderStreet, senderCity, senderState, senderCountry,
-                receiverfName, receiverlName, receiverStreet, receiverCity, receiverState, receiverCountry,
-                weight, volume, isFragile, shippingDate, description, category
-            }).toString();
-            
             // Redirect to suggestions page
-            window.location.href = `/parcel-suggestions?${queryParams}`;
+            window.location.href = `/parcel-suggestions?senderStreet=${encodeURIComponent(senderStreet)}&senderCity=${encodeURIComponent(senderCity)}&senderState=${encodeURIComponent(senderState)}&senderCountry=${encodeURIComponent(senderCountry)}&receiverfName=${encodeURIComponent(receiverfName)}&receiverlName=${encodeURIComponent(receiverlName)}&receiverStreet=${encodeURIComponent(receiverStreet)}&receiverCity=${encodeURIComponent(receiverCity)}&receiverState=${encodeURIComponent(receiverState)}&receiverCountry=${encodeURIComponent(receiverCountry)}&weight=${weight}&volume=${volume}&isFragile=${isFragile}&description=${encodeURIComponent(description)}&category=${encodeURIComponent(category)}&shippingDate=${shippingDate}`;
         });
         
         // Add animation to form sections

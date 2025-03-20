@@ -110,36 +110,7 @@
         <h1>Flight Suggestions</h1>
         
         <div class="suggestions" id="suggestionsList">
-            <!-- Flight suggestion cards will be populated here -->
-            <div class="card">
-                <h2>American Airlines</h2>
-                <p>From: New York</p>
-                <p>To: London</p>
-                <p>Date: 2025-03-20</p>
-                <p>Passengers: 1</p>
-                <p>Price per ticket: $450</p>
-                <button class="button" onclick="handleSelect('AA123')">Select</button>
-            </div>
-            
-            <div class="card">
-                <h2>British Airways</h2>
-                <p>From: New York</p>
-                <p>To: London</p>
-                <p>Date: 2025-03-20</p>
-                <p>Passengers: 1</p>
-                <p>Price per ticket: $520</p>
-                <button class="button" onclick="handleSelect('BA456')">Select</button>
-            </div>
-            
-            <div class="card">
-                <h2>Delta Airlines</h2>
-                <p>From: New York</p>
-                <p>To: London</p>
-                <p>Date: 2025-03-20</p>
-                <p>Passengers: 1</p>
-                <p>Price per ticket: $485</p>
-                <button class="button" onclick="handleSelect('DL789')">Select</button>
-            </div>
+
         </div>
         
         <div class="formGroup">
@@ -160,15 +131,51 @@
         const fromCity = params.get('from') || 'New York';
         const toCity = params.get('to') || 'London';
         const travelDate = params.get('date') || '2025-03-20';
-        const passengers = params.get('passengers') || '1';
-        
-        // Update the cards with the actual search parameters
-        document.querySelectorAll('.card').forEach(card => {
-            card.querySelectorAll('p')[0].textContent = `From: ${fromCity}`;
-            card.querySelectorAll('p')[1].textContent = `To: ${toCity}`;
-            card.querySelectorAll('p')[2].textContent = `Date: ${travelDate}`;
-            card.querySelectorAll('p')[3].textContent = `Passengers: ${passengers}`;
-        });
+
+        const airlines = [
+            { name:"American Airlines", code:"AA"},
+            { name:"British Airways", code:"BA"},
+            { name:"Delta Airlines", code:"DL"},
+            { name:"Emirates", code:"EK"},
+            { name:"Lufthansa", code:"LH"},
+            { name:"Qatar Airways", code:"QR"},
+            { name:"Singapore Airlines", code:"SQ"},
+            { name:"United Airlines", code:"UA"},
+        ]
+
+        function generateRandomFlights() {
+            const suggestionsList = document.getElementById('suggestionsList');
+            suggestionsList.innerHTML = '';
+            
+            const numberOfFlights = Math.floor(Math.random() * 3) + 3;
+            const basePrice = Math.floor(Math.random() * 300) + 350;
+            
+            const shuffledAirlines = [...airlines].sort(() => 0.5 - Math.random());
+            
+            for (let i = 0; i < numberOfFlights && i < shuffledAirlines.length; i++) {
+                const airline = shuffledAirlines[i];
+                const flightNumber = Math.floor(Math.random() * 900) + 100;
+                const flightId = `${airline.code}${flightNumber}`;
+                
+                const priceVariation = Math.floor(Math.random() * 100) - 50;
+                const price = basePrice + priceVariation;
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h2>${airline.name}</h2>
+                    <p>From: ${fromCity}</p>
+                    <p>To: ${toCity}</p>
+                    <p>Date: ${travelDate}</p>
+                    <p>Price per ticket: $${price}</p>
+                    <button class="button" onclick="handleSelect('${flightId}')">Select</button>
+                `;
+                
+                suggestionsList.appendChild(card);
+            }
+        }
+
+        generateRandomFlights();
         
         // Selected flight ID
         let selectedFlightId = null;
@@ -202,11 +209,92 @@
                 return;
             }
             
-            // In a real app, we would send this data to the server
-            alert(`Booking confirmed!\nFlight: ${selectedFlightId}\nPassport: ${passportNumber}`);
-            
-            // Redirect to a confirmation page
-            // window.location.href = `/booking-confirmation?flightId=${selectedFlightId}&passport=${passportNumber}`;
+            // In a real app, we would send this data to the server to create a booking
+            const selectedCard = document.querySelector('.card[style*="border: 2px solid"]');
+            const airline = selectedCard.querySelector('h2').textContent;
+            const price = selectedCard.querySelector('p:nth-child(5)').textContent.split('$')[1];
+
+            const bookingData = {
+                departureDate: new Date(travelDate),
+                bookingStatus: "Confirmed",
+            }
+
+            const travelData = {
+                travelStatus: "Scheduled",
+                origin: fromCity,
+                destination: toCity,
+                travelDate: new Date(travelDate),
+                modeOfTransport: "Flight",
+                eta: "18:00",
+                startTime: "14:00",
+                actualEndTime: null ,
+            }
+
+            const passengerData = {
+                passportNumber: passportNumber,
+                userId: null,
+            }
+
+            fetch('/bookings/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(bookingData)
+            })
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error('Failed to create booking');
+                }
+
+                return response.json();
+            })
+            .then(bookingResponse => {
+                console.log('Booking created:', bookingResponse);
+
+                return fetch('/travellogs/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(travelData)
+                })
+            })
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error('Failed to create travel log');
+                }
+
+                return response.json();
+            })
+            .then(travelResponse => {
+                console.log('Travel log created:', travelResponse);
+                
+                return fetch('/passengers/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(passengerData)
+                })
+            })
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error('Failed to create passenger');
+                }
+
+                return response.json();
+            })
+            .then(passengerResponse => {
+                console.log('Passenger created:', passengerResponse);
+                
+                alert(`Booking confirmed!\nFlight: ${selectedFlightId}\nAirline: ${airline}\nPassport: ${passportNumber}\nFrom: ${fromCity}\nTo: ${toCity}\nDate: ${travelDate}`);
+                window.location.href = `/home`;
+            })
+            .catch(error => {
+                console.error('Booking error:', error);
+                alert('Failed to confirm booking');
+            });
         }
     </script>
 </body>

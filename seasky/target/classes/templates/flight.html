@@ -125,12 +125,7 @@
             
             console.log('Flight search:', { fromCity, toCity, travelDate });
             
-            // In a real application, you would send this data to a server
-            // For now, just show an alert
-            alert(`Searching for flights from ${fromCity} to ${toCity} on ${travelDate}`);
-            
-            // You could redirect to a results page like this:
-            // window.location.href = `/flight-results?from=${fromCity}&to=${toCity}&date=${travelDate}`;
+            window.location.href = `/flight-suggestions?from=${encodeURIComponent(fromCity)}&to=${encodeURIComponent(toCity)}&date=${travelDate}`;
         });
     </script>
 </body>

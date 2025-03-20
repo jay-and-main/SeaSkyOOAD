@@ -120,11 +120,13 @@
 <body>
     <div class="container">
         <h1>Shipping Options</h1>
-        <div id="suggestions" class="suggestions">
-            <!-- Shipping options will be generated here -->
+        <div id="suggestionsList" class="suggestions">
         </div>
         <button id="cheapestButton" class="cheapestButton">
             Show Cheapest Option
+        </button>
+        <button class="button" onclick="confirmBooking()">
+            Confirm Booking
         </button>
     </div>
 
@@ -163,53 +165,43 @@
             "Express", "Standard", "Economy", "Priority", "Next Day", "2-Day"
         ];
 
-        const getRandomCarrier = () => carriers[Math.floor(Math.random() * carriers.length)];
+        let shippingOptions = [];
+        
         const getRandomServiceType = () => serviceTypes[Math.floor(Math.random() * serviceTypes.length)];
-        const getRandomDeliveryDays = () => Math.floor(Math.random() * 7) + 1;
-        
-        // Generate shipping suggestions
-        let suggestions = [];
-        
-        function generateSuggestions() {
-            suggestions = [
-                {
-                    id: 1,
-                    carrier: getRandomCarrier(),
-                    price: generateRandomPrice(),
-                    estimatedDays: getRandomDeliveryDays(),
-                    serviceType: getRandomServiceType()
-                },
-                {
-                    id: 2,
-                    carrier: getRandomCarrier(),
-                    price: generateRandomPrice(),
-                    estimatedDays: getRandomDeliveryDays(),
-                    serviceType: getRandomServiceType()
-                },
-                {
-                    id: 3,
-                    carrier: getRandomCarrier(),
-                    price: generateRandomPrice(),
-                    estimatedDays: getRandomDeliveryDays(),
-                    serviceType: getRandomServiceType()
-                }
-            ];
-            
-            renderSuggestions();
-        }
-        
-        // Render suggestions to the DOM
-        function renderSuggestions() {
-            const suggestionsContainer = document.getElementById('suggestions');
-            suggestionsContainer.innerHTML = '';
-            
-            suggestions.forEach(suggestion => {
+        function generateRandomShippings() {
+            const suggestionsList = document.getElementById('suggestionsList');
+            suggestionsList.innerHTML = '';
+
+            shippingOptions = [];
+
+            const numOfOptions = Math.floor(Math.random() * 3) + 3;
+            const basePrice = generateRandomPrice();
+
+            const shuffledCarriers = [...carriers].sort(() => 0.5 - Math.random());
+
+            for (let i = 0; i<numOfOptions && i<shuffledCarriers.length; i++){
+                const carrier = shuffledCarriers[i];
+                const serviceType = getRandomServiceType();
+                const priceVariation = Math.floor(Math.random() * 100) - 50;
+                const price = basePrice + priceVariation;
+                const optionId = `${carrier.substr(0,2)}${i}${Math.floor(Math.random() * 1000)}`;
+
+                const estimatedDays = Math.floor(Math.random() * 5) + 2;
+
+                shippingOptions.push({
+                    id: optionId,
+                    carrier,
+                    serviceType,
+                    price,
+                    estimatedDays
+                });
+
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
-                    <h2>${suggestion.carrier}</h2>
-                    <p>Service Type: ${suggestion.serviceType}</p>
-                    <p>Estimated Delivery: ${suggestion.estimatedDays} days</p>
+                    <h2>${carrier}</h2>
+                    <p>Service Type: ${serviceType}</p>
+                    <p>Estimated Delivery: ${estimatedDays} days</p>
                     <p>From: ${senderCity}, ${senderCountry}</p>
                     <p>To: ${receiverCity}, ${receiverCountry}</p>
                     <p>Package Details:</p>
@@ -218,121 +210,198 @@
                         <li>Volume: ${volume} m³</li>
                         <li>Fragile: ${isFragile === 'yes' ? 'yes' : 'no'}</li>
                     </ul>
-                    <p class="price">Price: $${suggestion.price}</p>
-                    <button class="button" data-id="${suggestion.id}">Select</button>
+                    <p class="price">Price: $${price}</p>
+                    <button class="button" onclick="handleSelect('${optionId}')">Select</button>
                 `;
-                suggestionsContainer.appendChild(card);
-            });
-            
-            // Add event listeners to buttons
-            document.querySelectorAll('.card button').forEach(button => {
-                button.addEventListener('click', function() {
-                    handleSelect(parseInt(this.getAttribute('data-id')));
-                });
-            });
+
+                suggestionsList.appendChild(card);
+            }
         }
-        
+
+        let selectedShippingId = null;
         // Handle selection of a shipping option
         function handleSelect(id) {
-            const selectedOption = suggestions.find(s => s.id === id);
-            
-            // In a real application, this would send data to the server
-            alert(`You've selected ${selectedOption.carrier} ${selectedOption.serviceType} shipping for $${selectedOption.price}`);
-            
-            // Prepare data that would be sent to the server
-            const bookingData = {
-                senderAddress: {
-                    street: senderStreet,
-                    city: senderCity,
-                    state: senderState,
-                    country: senderCountry
-                },
-                receiverDetails: {
-                    firstName: receiverfName,
-                    lastName: receiverlName,
-                    street: receiverStreet,
-                    city: receiverCity,
-                    state: receiverState,
-                    country: receiverCountry
-                },
-                weight,
-                volume,
-                isFragile,
-                description,
-                category,
-                shippingDate,
-                selectedOption: selectedOption
-            };
-            
-            console.log('Booking data to send:', bookingData);
-            
-            // In a real application with a backend:
-            /*
-            fetch('/api/auth/bookParcel', {
+            selectedShippingId = id;
+            document.querySelectorAll('.card').forEach(card => {
+                const button = card.querySelector('button');
+                if (button.getAttribute('onclick').includes(id)) {
+                    button.style.border = '2px solid #0070f3';
+                    button.textContent = 'Selected';
+                } else {
+                    button.style.border = 'none';
+                    button.textContent = 'Select';
+                }
+            });
+        }
+
+        function confirmBooking() {
+            if(!selectedShippingId) {
+                alert('Please select a shipping option before proceeding');
+                return;
+            }
+
+            const selectedOption = shippingOptions.find(option => option.id === selectedShippingId);
+            const trackingNumber = 'New tracking number';
+
+            const shippingData = {
+                departureDate: new Date(shippingDate),
+                shipmentStatus: "Confirmed",
+            }
+
+            const senderData = {
+                street: senderStreet,
+                city: senderCity,
+                state: senderState,
+                country: senderCountry,
+                company: "SeaSky Logistics",
+                userId: null,
+            }
+
+            const receiverData = {
+                firstName: receiverfName,
+                lastName: receiverlName,
+                street: receiverStreet,
+                city: receiverCity,
+                state: receiverState,
+                country: receiverCountry,
+            }
+
+            const travelData = {
+                travelStatus: "Scheduled",
+                origin: senderCity,
+                destination: receiverCity,
+                travelDate: new Date(shippingDate),
+                modeOfTransport: "Ship",
+                eta: "18:00",
+                startTime: "14:00",
+                actualEndTime: null ,
+            }
+
+            const goodData = {
+                weight: weight,
+                volume: volume,
+                regulationStatus: "Approved",
+                category: category,
+                fragile: isFragile === 'yes',
+                description: description,
+            }
+
+            fetch('/shipments/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
-                body: JSON.stringify(bookingData)
+                body: JSON.stringify(shippingData)
             })
             .then(response => {
-                if (response.ok) {
-                    alert('Parcel booking successful!');
-                    window.location.href = '/';
-                } else {
-                    return response.json().then(data => {
-                        throw new Error(data.message || 'Booking failed');
-                    });
+                if(!response.ok) {
+                    throw new Error('Failed to create shipment');
                 }
+
+                return response.json();
+            })
+            .then(shipmentResponse => {
+                console.log('Shipment created:', shipmentResponse);
+
+                return fetch('/senders/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(senderData)
+                });
+            })
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error('Failed to create sender');
+                }
+
+                return response.json();
+            })
+            .then(senderResponse => {
+                console.log('Sender created:', senderResponse);
+
+                return fetch('/receivers/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(receiverData)
+                });
+            })
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error('Failed to create receiver');
+                }
+
+                return response.json();
+            })
+            .then(receiverResponse => {
+                console.log('Receiver created:', receiverResponse);
+
+                return fetch('/travellogs/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(travelData)
+                });
+            })
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error('Failed to create travel log');
+                }
+
+                return response.json();
+            })
+            .then(travelResponse => {
+                console.log('Travel log created:', travelResponse);
+                
+                return fetch('/goods/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(goodData)
+                });
+            })
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error('Failed to create goods');
+                }
+
+                return response.json();
+            })
+            .then(goodResponse => {
+                console.log('Goods created:', goodResponse);
+
+                alert(`Shipping Confirmed!\nTracking Number: ${trackingNumber}\nCarrier: ${selectedOption.carrier}\nService Type: ${selectedOption.serviceType}\nEstimated Delivery: ${selectedOption.estimatedDays} days\nPrice: $${selectedOption.price}`);
+                window.location.href = '/home';
             })
             .catch(error => {
-                alert(error.message);
+                console.error('Shipment error:', error);
+                alert('Failed to confirm shipment');
             });
-            */
-            
-            // For demo purposes, simulate success and redirect
-            alert('Parcel booking successful!');
-            // window.location.href = '/';
         }
         
-        // Show cheapest option
         document.getElementById('cheapestButton').addEventListener('click', function() {
-            const cheapestOption = suggestions.reduce((prev, curr) => 
-                parseFloat(curr.price) < parseFloat(prev.price) ? curr : prev
+            if (shippingOptions.length === 0) {
+                alert('No shipping options available. Please try again later.');
+                return;
+            }
+
+            const cheapestOption = shippingOptions.reduce((prev, curr) =>
+                parseFloat(curr.price) < parseFloat(prev.price) ? curr : prev, shippingOptions[0]
             );
-            
-            alert(`Cheapest Option:\nCarrier: ${cheapestOption.carrier}\nService Type: ${cheapestOption.serviceType}\nPrice: $${cheapestOption.price}\nEstimated Delivery: ${cheapestOption.estimatedDays} days`);
+
+            alert(`Cheapest Option:\nCarrier: ${cheapestOption.carrier}\nService Type: ${cheapestOption.serviceType}\nEstimated Delivery: ${cheapestOption.estimatedDays} days\nPrice: $${cheapestOption.price}`);
         });
-        
-        // Initialize on page load
+
         document.addEventListener('DOMContentLoaded', function() {
-            generateSuggestions();
-            
-            // Simulate API call to the server
-            console.log('Sending suggestions data to server for analysis');
-            
-            // In a real application:
-            /*
-            fetch('/api/shipSuggestion', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    suggestions: suggestions.map(({ carrier, serviceType, price }) => ({ 
-                        carrier, serviceType, price 
-                    })) 
-                })
-            })
-            .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.error("Error fetching shipping suggestions:", error));
-            */
+            generateRandomShippings();
         });
-        
-        // Initialize immediately for the demo
-        generateSuggestions();
+
+        generateRandomShippings();
     </script>
 </body>
 </html>
