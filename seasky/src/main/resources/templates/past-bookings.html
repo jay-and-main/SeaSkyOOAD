@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Past Bookings & Shipments - SeaSky Logistics</title>
+    <title>Your Travel History - SeaSky Logistics</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body, html {
@@ -54,14 +54,6 @@
             margin-bottom: 10px;
             font-weight: 600;
             letter-spacing: 1px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        
-        .subtitle {
-            font-size: 1.8rem;
-            color: white;
-            margin: 40px 0 20px;
-            font-weight: 500;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         
@@ -209,6 +201,11 @@
             color: #92400e;
         }
         
+        .badge-status {
+            background-color: #e9d5ff;
+            color: #7e22ce;
+        }
+        
         .footer {
             text-align: center;
             color: rgba(255, 255, 255, 0.7);
@@ -241,14 +238,55 @@
         .backButton:hover {
             transform: scale(1.1);
         }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #0070f3;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-filter {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #333;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .filter-btn.active {
+            background-color: #0070f3;
+            color: white;
+        }
         
         @media (max-width: 768px) {
             .title {
                 font-size: 1.8rem;
-            }
-            
-            .subtitle {
-                font-size: 1.5rem;
             }
             
             .tableHeader {
@@ -284,62 +322,46 @@
             <!-- Error message (hidden by default) -->
             <div class="error" style="display: none;">
                 <i class="fas fa-exclamation-circle"></i>
-                <span id="errorMessage">Failed to load booking data. Please try again later.</span>
+                <span id="errorMessage">Failed to load travel data. Please try again later.</span>
+            </div>
+
+            <!-- Status filters -->
+            <div class="status-filter" id="statusFilter">
+                <button class="filter-btn active" data-filter="all">All Records</button>
+                <!-- Dynamically added filter buttons will go here -->
             </div>
             
-            <!-- Past Bookings Table -->
+            <!-- Travel Logs Table -->
             <div class="tableSection">
                 <div class="tableHeader">
                     <div>
-                        <i class="fas fa-plane"></i>
-                        <span>Past Bookings</span>
+                        <i class="fas fa-route"></i>
+                        <span>Travel Records</span>
                     </div>
-                    <span class="tableCount" id="bookingsCount">0 records</span>
+                    <span class="tableCount" id="recordsCount">Loading...</span>
                 </div>
                 <div class="tableWrapper">
-                    <table class="table" id="bookingsTable">
+                    <table class="table" id="travelLogsTable">
                         <thead>
                             <tr>
-                                <th>Booking ID</th>
+                                <th>Status</th>
                                 <th>Origin</th>
                                 <th>Destination</th>
                                 <th>Date</th>
                                 <th>Transport</th>
                                 <th>Start Time</th>
+                                <th>ETA</th>
                                 <th>End Time</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Table content will be populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Past Shipments Table -->
-            <h2 class="subtitle">Past Shipments</h2>
-            <div class="tableSection">
-                <div class="tableHeader">
-                    <div>
-                        <i class="fas fa-shipping-fast"></i>
-                        <span>Past Shipments</span>
-                    </div>
-                    <span class="tableCount" id="shipmentsCount">0 records</span>
-                </div>
-                <div class="tableWrapper">
-                    <table class="table" id="shipmentsTable">
-                        <thead>
                             <tr>
-                                <th>Shipment ID</th>
-                                <th>Origin</th>
-                                <th>Destination</th>
-                                <th>Transport</th>
-                                <th>ETA</th>
-                                <th>Actual End Time</th>
+                                <td colspan="8">
+                                    <div class="loading">
+                                        <div class="loading-spinner"></div>
+                                    </div>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Table content will be populated by JavaScript -->
                         </tbody>
                     </table>
                 </div>
@@ -353,70 +375,92 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Sample data (in a real app, this would come from your API)
-            const bookings = [
+            // Use fallback data for testing (will only be used if API fails)
+            const fallbackData = [
                 {
-                    bookingId: "BK10045",
+                    travelStatus: "Booking",
                     origin: "New York, USA",
                     destination: "London, UK",
-                    date: "2025-01-15",
+                    travelDate: "2025-01-15",
                     modeOfTransport: "Air",
-                    startTime: "08:30 AM",
-                    actualEndTime: "9:45 PM"
+                    startTime: "08:30:00",
+                    eta: "20:45:00",
+                    actualEndTime: "21:45:00"
                 },
                 {
-                    bookingId: "BK10089",
+                    travelStatus: "Booking",
                     origin: "Tokyo, Japan",
                     destination: "Sydney, Australia",
-                    date: "2024-12-03",
+                    travelDate: "2024-12-03",
                     modeOfTransport: "Sea",
-                    startTime: "10:15 AM",
-                    actualEndTime: "2:30 PM (Dec 10)"
+                    startTime: "10:15:00",
+                    eta: "14:00:00",
+                    actualEndTime: "14:30:00"
                 },
                 {
-                    bookingId: "BK10124",
-                    origin: "Dubai, UAE",
-                    destination: "Paris, France",
-                    date: "2024-11-22",
-                    modeOfTransport: "Air",
-                    startTime: "11:45 PM",
-                    actualEndTime: "5:20 AM (Nov 23)"
-                }
-            ];
-            
-            const shipments = [
-                {
-                    shipmentId: "SH5697",
+                    travelStatus: "Shipment",
                     origin: "Shanghai, China",
                     destination: "Hamburg, Germany",
                     modeOfTransport: "Sea",
-                    eta: "2024-12-28",
-                    actualEndTime: "2024-12-30"
-                },
-                {
-                    shipmentId: "SH5712",
-                    origin: "Los Angeles, USA",
-                    destination: "Mexico City, Mexico",
-                    modeOfTransport: "Land",
-                    eta: "2025-01-05",
-                    actualEndTime: "2025-01-06"
+                    eta: "12:00:00",
+                    travelDate: "2024-12-28",
+                    startTime: "09:00:00",
+                    actualEndTime: "14:30:00"
                 }
             ];
             
+            let allTravelLogs = [];
+            let currentFilter = 'all';
+
+            fetchTravelLogs();
+            
             // Function to format dates
             function formatDate(dateString) {
-                const options = { year: 'numeric', month: 'short', day: 'numeric' };
-                return new Date(dateString).toLocaleDateString(undefined, options);
+                if (!dateString) return 'N/A';
+                
+                try {
+                    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                    return new Date(dateString).toLocaleDateString(undefined, options);
+                } catch (e) {
+                    return dateString || 'N/A';
+                }
             }
             
-            // Function to create a transport badge
+            // Function to format time
+            function formatTime(timeString) {
+                if (!timeString) return 'N/A';
+                
+                try {
+                    // Handle different time formats (ISO string or LocalTime format)
+                    if (timeString.includes('T')) {
+                        // Full ISO date string
+                        const date = new Date(timeString);
+                        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    } else if (timeString.includes(':')) {
+                        // LocalTime format (HH:MM:SS)
+                        const timeParts = timeString.split(':');
+                        const hours = parseInt(timeParts[0]);
+                        const minutes = timeParts[1];
+                        const ampm = hours >= 12 ? 'PM' : 'AM';
+                        const hour12 = hours % 12 || 12;
+                        return `${hour12}:${minutes} ${ampm}`;
+                    }
+                    
+                    return timeString;
+                } catch (e) {
+                    return timeString || 'N/A';
+                }
+            }
+            
             function getTransportBadge(mode) {
+                if (!mode) return '<span class="badge">Unknown</span>';
+                
                 const lowerMode = mode.toLowerCase();
                 let badgeClass = 'badge';
                 
-                if (lowerMode.includes('air')) {
+                if (lowerMode.includes('air') || lowerMode.includes('flight')) {
                     badgeClass += ' badge-air';
-                } else if (lowerMode.includes('sea')) {
+                } else if (lowerMode.includes('sea') || lowerMode.includes('ship')) {
                     badgeClass += ' badge-sea';
                 } else {
                     badgeClass += ' badge-land';
@@ -425,96 +469,164 @@
                 return `<span class="${badgeClass}">${mode}</span>`;
             }
             
-            // Populate bookings table
-            function populateBookingsTable() {
-                const tableBody = document.querySelector("#bookingsTable tbody");
-                document.getElementById('bookingsCount').textContent = `${bookings.length} records`;
-                
-                if (bookings.length === 0) {
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="7">
-                                <div class="emptyState">
-                                    <i class="fas fa-calendar-xmark"></i>
-                                    <p class="emptyText">No past bookings available.</p>
-                                    <p class="emptyText">Your completed travel bookings will appear here.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-                
-                tableBody.innerHTML = '';
-                bookings.forEach(booking => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td><strong>${booking.bookingId}</strong></td>
-                        <td>${booking.origin}</td>
-                        <td>${booking.destination}</td>
-                        <td>${formatDate(booking.date)}</td>
-                        <td>${getTransportBadge(booking.modeOfTransport)}</td>
-                        <td>${booking.startTime}</td>
-                        <td>${booking.actualEndTime}</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
+            function getStatusBadge(status) {
+                if (!status) return '<span class="badge">Unknown</span>';
+                return `<span class="badge badge-status">${status}</span>`;
             }
             
-            // Populate shipments table
-            function populateShipmentsTable() {
-                const tableBody = document.querySelector("#shipmentsTable tbody");
-                document.getElementById('shipmentsCount').textContent = `${shipments.length} records`;
-                
-                if (shipments.length === 0) {
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="6">
-                                <div class="emptyState">
-                                    <i class="fas fa-box-open"></i>
-                                    <p class="emptyText">No past shipments available.</p>
-                                    <p class="emptyText">Your completed shipments will appear here.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-                
-                tableBody.innerHTML = '';
-                shipments.forEach(shipment => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td><strong>${shipment.shipmentId}</strong></td>
-                        <td>${shipment.origin}</td>
-                        <td>${shipment.destination}</td>
-                        <td>${getTransportBadge(shipment.modeOfTransport)}</td>
-                        <td>${formatDate(shipment.eta)}</td>
-                        <td>${formatDate(shipment.actualEndTime)}</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-            }
-            
-            // Initialize tables
-            populateBookingsTable();
-            populateShipmentsTable();
-            
-            // Simulate loading error (uncomment to test)
-            // document.querySelector('.error').style.display = 'flex';
-            
-            // Add some simple animations
-            const sections = document.querySelectorAll('.tableSection');
-            sections.forEach((section, index) => {
-                section.style.opacity = '0';
-                section.style.transform = 'translateY(20px)';
-                
+            function fetchTravelLogs() {
                 setTimeout(() => {
-                    section.style.transition = 'all 0.5s ease';
-                    section.style.opacity = '1';
-                    section.style.transform = 'translateY(0)';
-                }, 300 + (index * 200));
-            });
+                    const fetchOptions = {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    };
+                    
+                    fetch('/travellogs/all', fetchOptions)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+                            }
+                            
+                            return response.json();
+                        })
+                        .then(data => {
+                            processTravelLogs(data);
+                        })
+                        .catch(error => {
+                            document.querySelector('.error').style.display = 'flex';
+                            document.getElementById('errorMessage').textContent = 
+                                'Failed to load travel data: ' + error.message + '. Using fallback data for demo purposes.';
+                            
+                            processTravelLogs(fallbackData);
+                        });
+                }, 500);
+            }
+            
+            function processTravelLogs(travelLogs) {
+                if (!Array.isArray(travelLogs)) {
+                    travelLogs = [travelLogs];
+                }
+                
+                allTravelLogs = travelLogs;
+                
+                // Update the UI
+                populateTravelLogsTable(allTravelLogs);
+                
+                // Generate status filters
+                generateStatusFilters(allTravelLogs);
+                
+                // Add animations
+                animateSections();
+            }
+            
+            function generateStatusFilters(logs) {
+                const statuses = [...new Set(logs.map(log => log.travelStatus))];
+                
+                const filterContainer = document.getElementById('statusFilter');
+                
+                // Add status-specific filter buttons
+                statuses.forEach(status => {
+                    if (!status) return;
+                    
+                    const button = document.createElement('button');
+                    button.classList.add('filter-btn');
+                    button.setAttribute('data-filter', status);
+                    button.textContent = status;
+                    button.addEventListener('click', function() {
+                        filterByStatus(status);
+                        
+                        document.querySelectorAll('.filter-btn').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                    });
+                    
+                    filterContainer.appendChild(button);
+                });
+                
+                const allButton = document.querySelector('.filter-btn[data-filter="all"]');
+                allButton.addEventListener('click', function() {
+                    filterByStatus('all');
+                    
+                    document.querySelectorAll('.filter-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            }
+            
+            function filterByStatus(status) {
+                currentFilter = status;
+                
+                let filteredLogs = allTravelLogs;
+                
+                if (status !== 'all') {
+                    filteredLogs = allTravelLogs.filter(log => log.travelStatus === status);
+                }
+                
+                populateTravelLogsTable(filteredLogs);
+            }
+            
+            function getEmptyStateHTML() {
+                return `
+                    <tr>
+                        <td colspan="8">
+                            <div class="emptyState">
+                                <i class="fas fa-route"></i>
+                                <p class="emptyText">No travel records available.</p>
+                                <p class="emptyText">Your travel data will appear here.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            function populateTravelLogsTable(logs) {
+                const tableBody = document.querySelector("#travelLogsTable tbody");
+                document.getElementById('recordsCount').textContent = `${logs.length} records`;
+                
+                if (logs.length === 0) {
+                    tableBody.innerHTML = getEmptyStateHTML();
+                    return;
+                }
+                
+                tableBody.innerHTML = '';
+                logs.forEach(log => {
+                    try {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${getStatusBadge(log.travelStatus)}</td>
+                            <td>${log.origin || 'N/A'}</td>
+                            <td>${log.destination || 'N/A'}</td>
+                            <td>${formatDate(log.travelDate)}</td>
+                            <td>${getTransportBadge(log.modeOfTransport)}</td>
+                            <td>${formatTime(log.startTime)}</td>
+                            <td>${formatTime(log.eta)}</td>
+                            <td>${formatTime(log.actualEndTime)}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    } catch (e) {
+                    }
+                });
+            }
+            
+            function animateSections() {
+                const sections = document.querySelectorAll('.tableSection');
+                sections.forEach((section, index) => {
+                    section.style.opacity = '0';
+                    section.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        section.style.transition = 'all 0.5s ease';
+                        section.style.opacity = '1';
+                        section.style.transform = 'translateY(0)';
+                    }, 300 + (index * 200));
+                });
+            }
         });
     </script>
 </body>
