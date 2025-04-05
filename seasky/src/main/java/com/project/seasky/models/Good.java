@@ -14,17 +14,19 @@ public class Good {
     private String category;
     private boolean fragile;
     private String description;
+    private String shipmentNumberId;
 
     public Good() {
     }
 
-    public Good(double weight, double volume, String regulationStatus, String category, boolean fragile, String description) {
+    public Good(double weight, double volume, String regulationStatus, String category, boolean fragile, String description, String shipmentNumberId) {
         this.weight = weight;
         this.volume = volume;
         this.regulationStatus = regulationStatus;
         this.category = category;
         this.fragile = fragile;
         this.description = description;
+        this.shipmentNumberId = shipmentNumberId;
     }
 
     public String getPackageId(){
@@ -81,5 +83,9 @@ public class Good {
 
     public void setDescription(String description){
         this.description = description;
+    }
+
+    public String getShipmentNumberId(){
+        return shipmentNumberId;
     }
 }

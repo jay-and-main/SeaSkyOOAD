@@ -17,12 +17,14 @@ public class TravelLog {
     private LocalTime eta;
     private LocalTime actualEndTime;
     private LocalTime startTime;
+    private String passportNumber;
+    private String shipmentNumberId;
 
     public TravelLog() {
 
     }
 
-    public TravelLog(String travelStatus, String origin, String destination, Date travelDate, String modeOfTransport, LocalTime eta, LocalTime actualEndTime, LocalTime startTime){
+    public TravelLog(String travelStatus, String origin, String destination, Date travelDate, String modeOfTransport, LocalTime eta, LocalTime actualEndTime, LocalTime startTime, String passportNumber, String shipmentNumberId) {
         this.travelStatus = travelStatus;
         this.origin = origin;
         this.destination = destination;
@@ -31,6 +33,8 @@ public class TravelLog {
         this.eta = eta;
         this.actualEndTime = actualEndTime;
         this.startTime = startTime;
+        this.passportNumber = passportNumber;
+        this.shipmentNumberId = shipmentNumberId;
     }
 
     public String getLogId(){
@@ -103,5 +107,20 @@ public class TravelLog {
 
     public void setStartTime(LocalTime startTime){
         this.startTime = startTime;
+    }
+
+    public String getPassportNumber(){
+        return passportNumber;
+    }
+    public void setPassportNumber(String passportNumber){
+        this.passportNumber = passportNumber;
+    }
+
+    public String getShipmentNumberId(){
+        return shipmentNumberId;
+    }
+
+    public void setShipmentNumberId(String shipmentNumberId){
+        this.shipmentNumberId = shipmentNumberId;
     }
 }

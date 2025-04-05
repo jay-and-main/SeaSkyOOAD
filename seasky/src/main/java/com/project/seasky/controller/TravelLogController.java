@@ -43,4 +43,9 @@ public class TravelLogController {
         travelLogRepository.deleteById(id);
         return "TravelLog with ID " + id + " deleted successfully.";
     }
+
+    @GetMapping("/shipmentNumberId/{shipmentNumberId}")
+    public Optional<TravelLog> getTravelLogsByShipmentNumberId(@PathVariable String shipmentNumberId) {
+        return travelLogRepository.findByShipmentNumberId(shipmentNumberId);
+    }
 }

@@ -234,6 +234,15 @@
             });
         }
 
+        function generateShipmentId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let shipmentId = '';
+            for (let i = 0; i < 12; i++) {
+                shipmentId += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return shipmentId;
+        }
+
         function confirmBooking() {
             if(!selectedShippingId) {
                 alert('Please select a shipping option before proceeding');
@@ -242,6 +251,7 @@
 
             const selectedOption = shippingOptions.find(option => option.id === selectedShippingId);
             const trackingNumber = 'New tracking number';
+            const shipmentNumberId = generateShipmentId();
 
             const shippingData = {
                 departureDate: new Date(shippingDate),
@@ -275,6 +285,7 @@
                 eta: "18:00",
                 startTime: "14:00",
                 actualEndTime: null ,
+                shipmentNumberId: shipmentNumberId,
             }
 
             const goodData = {
@@ -284,6 +295,7 @@
                 category: category,
                 fragile: isFragile === 'yes',
                 description: description,
+                shipmentNumberId: shipmentNumberId,
             }
 
             fetch('/shipments/create', {
