@@ -4,23 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shipment Status Management - SeaSky Logistics</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 20px auto;
             padding: 20px;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.95);
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             text-align: center;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
             color: black;
         }
 
@@ -34,126 +35,295 @@
             width: 100%;
             height: 100%;
             z-index: -1;
+            filter: brightness(0.8);
         }
 
         .title {
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 20px;
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 10px;
+            display: inline-block;
         }
 
         .searchContainer {
             margin-bottom: 20px;
+            position: relative;
         }
 
         .searchInput {
-            padding: 10px;
+            padding: 10px 15px 10px 40px;
             width: 100%;
             max-width: 400px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 30px;
             font-size: 16px;
             color: black;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+        }
+
+        .searchInput:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+        }
+
+        .searchIcon {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-190px);
+            top: 12px;
+            color: #666;
         }
 
         .table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 15px;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .table th, .table td {
             padding: 12px 15px;
-            border: 1px solid #ddd;
+            border: 1px solid #eaeaea;
             color: black;
         }
 
         .table th {
-            background-color: #f4f4f4;
-            font-weight: bold;
+            background-color: #f8fafc;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            color: #4b5563;
         }
 
         .table tr:nth-child(even) {
-            background-color: #f9f9f9;
+            background-color: #fafafa;
+        }
+
+        .table tr:hover {
+            background-color: #f1f5f9;
         }
 
         .statusCell {
             text-transform: capitalize;
             font-weight: 500;
+            padding-left: 10px;
+            position: relative;
+        }
+
+        .statusCell::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .statusCell.verified::before {
+            background-color: #10b981;
+        }
+
+        .statusCell.pending::before {
+            background-color: #f59e0b;
+        }
+
+        .statusCell.rejected::before {
+            background-color: #ef4444;
+        }
+        
+        .statusCell.waiting-to-be-picked-up::before {
+            background-color: #3b82f6; /* blue */
+        }
+
+        .statusCell.shipping::before {
+            background-color: #8b5cf6; /* purple */
+        }
+
+        .statusCell.arrived-at-final-pickup-point::before {
+            background-color: #ec4899; /* pink */
+        }
+
+        .statusCell.out-for-delivery::before {
+            background-color: #f59e0b; /* amber */
+        }
+
+        .statusCell.delivered::before {
+            background-color: #10b981; /* green */
         }
 
         .statusSelect {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 8px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
             background-color: white;
+            font-size: 14px;
+            color: #4b5563;
+            transition: all 0.2s;
         }
 
-        .table th:nth-last-child(-n+2) {
-            width: 150px;
+        .statusSelect:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .backButton {
             position: absolute;
             top: 20px;
             left: 20px;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: white;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 46px;
+            height: 46px;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
             z-index: 2;
+            border: none;
+            color: #333;
+            font-size: 20px;
         }
         
         .backButton:hover {
             transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            background-color: #f8fafc;
         }
         
-        .verifyButton {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
+        .actionBtn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
+            border: none;
+            transition: all 0.2s;
         }
         
-        .verifyButton:hover {
-            background-color: #45a049;
+        .verifyBtn {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .verifyBtn:hover {
+            background-color: #059669;
+        }
+        
+        .rejectBtn {
+            background-color: #ef4444;
+            color: white;
+            margin-left: 8px;
+        }
+        
+        .rejectBtn:hover {
+            background-color: #dc2626;
+        }
+        
+        .restoreBtn {
+            background-color: #6366f1;
+            color: white;
+        }
+        
+        .restoreBtn:hover {
+            background-color: #4f46e5;
+        }
+
+        .refreshBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #2563eb;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .refreshBtn i {
+            transition: transform 0.5s ease;
+        }
+        
+        .refreshBtn:hover i {
+            transform: rotate(180deg);
+        }
+
+        .noData {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 15px;
+                padding: 15px;
+            }
+            
+            .table th, .table td {
+                padding: 8px;
+                font-size: 14px;
+            }
+            
+            .actionBtn {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="background"></div>
     
-    <a href="/admin" class="backButton">
-        <span style="font-size: 20px; font-weight: bold;">←</span>
-    </a>
+    <button class="backButton" onclick="window.location.href='/admin'">
+        <i class="fas fa-arrow-left"></i>
+    </button>
     
     <div class="container">
-        <h1 class="title">Travel Log Records</h1>
+        <h1 class="title">Verified Shipments</h1>
+        
         <div class="searchContainer">
+            <i class="fas fa-search searchIcon"></i>
             <input
                 type="text"
-                id="shipmentSearch"
+                id="verifiedSearch"
                 placeholder="Search by Shipment ID"
                 class="searchInput"
             />
         </div>
-        <table class="table" id="travelLogTable">
+        
+        <button class="refreshBtn" id="refreshVerified">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+        
+        <table class="table" id="verifiedTable">
             <thead>
                 <tr>
                     <th>Shipment ID</th>
                     <th>Origin</th>
                     <th>Destination</th>
                     <th>Travel Date</th>
-                    <th>Current Status</th>
+                    <th>Status</th>
+                    <th>Category</th>
+                    <th>Description</th>
                     <th>Update Status</th>
                 </tr>
             </thead>
@@ -161,224 +331,504 @@
                 <!-- Data will be populated by JavaScript -->
             </tbody>
         </table>
+        <div id="verifiedNoData" class="noData">No verified shipments found</div>
     </div>
     
     <div class="container">
-        <h1 class="title">Regulation Status Update</h1>
+        <h1 class="title">Pending Verification</h1>
+        
         <div class="searchContainer">
+            <i class="fas fa-search searchIcon"></i>
             <input
                 type="text"
-                id="regulationSearch"
+                id="pendingSearch"
                 placeholder="Search by Shipment ID"
                 class="searchInput"
             />
         </div>
-        <table class="table" id="regulationTable">
+        
+        <button class="refreshBtn" id="refreshPending">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+        
+        <table class="table" id="pendingTable">
             <thead>
                 <tr>
                     <th>Shipment ID</th>
                     <th>Origin</th>
                     <th>Destination</th>
                     <th>Travel Date</th>
-                    <th>Current Status</th>
                     <th>Category</th>
-                    <th>Verify</th>
+                    <th>Description</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <!-- Data will be populated by JavaScript -->
             </tbody>
         </table>
+        <div id="pendingNoData" class="noData">No shipments pending verification</div>
+    </div>
+    
+    <div class="container">
+        <h1 class="title">Rejected Shipments</h1>
+        
+        <div class="searchContainer">
+            <i class="fas fa-search searchIcon"></i>
+            <input
+                type="text"
+                id="rejectedSearch"
+                placeholder="Search by Shipment ID"
+                class="searchInput"
+            />
+        </div>
+        
+        <button class="refreshBtn" id="refreshRejected">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+        
+        <table class="table" id="rejectedTable">
+            <thead>
+                <tr>
+                    <th>Shipment ID</th>
+                    <th>Origin</th>
+                    <th>Destination</th>
+                    <th>Travel Date</th>
+                    <th>Status</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated by JavaScript -->
+            </tbody>
+        </table>
+        <div id="rejectedNoData" class="noData">No rejected shipments found</div>
     </div>
 
     <script>
-        // Sample data - in a real application, this would come from the server
-        const travelLogs = [
-            {
-                logId: "TL001",
-                shipmentId: "SH100",
-                origin: "New York",
-                destination: "London",
-                date: "2023-06-15",
-                travelStatus: "yet to be verified",
-                category: "Electronics"
-            },
-            {
-                logId: "TL002",
-                shipmentId: "SH101",
-                origin: "Tokyo",
-                destination: "Sydney",
-                date: "2023-06-18",
-                travelStatus: "in transit",
-                category: "Clothing"
-            },
-            {
-                logId: "TL003",
-                shipmentId: "SH102",
-                origin: "Paris",
-                destination: "Berlin",
-                date: "2023-06-20",
-                travelStatus: "waiting to be picked up",
-                category: "Books"
-            },
-            {
-                logId: "TL004",
-                shipmentId: "SH103",
-                origin: "Mumbai",
-                destination: "Dubai",
-                date: "2023-06-22",
-                travelStatus: "delivered",
-                category: "Food Items"
-            }
-        ];
+        // Data storage
+        let allGoods = [];
+        let allTravelLogs = [];
+        let goodsMap = {};
+        let filteredVerified = [];
+        let filteredPending = [];
+        let filteredRejected = [];
 
-        // Function to populate tables
-        function populateTravelLogTable(logs) {
-            const tableBody = document.querySelector("#travelLogTable tbody");
-            tableBody.innerHTML = "";
-            
-            logs.forEach(log => {
-                const row = document.createElement("tr");
-                
-                row.innerHTML = `
-                    <td>${log.shipmentId}</td>
-                    <td>${log.origin}</td>
-                    <td>${log.destination}</td>
-                    <td>${log.date}</td>
-                    <td class="statusCell">${log.travelStatus}</td>
-                    <td>
-                        <select class="statusSelect" data-log-id="${log.logId}">
-                            <option value="yet to be verified" ${log.travelStatus === "yet to be verified" ? 'selected' : ''}>Yet to be Verified</option>
-                            <option value="waiting to be picked up" ${log.travelStatus === "waiting to be picked up" ? 'selected' : ''}>Waiting to be picked up</option>
-                            <option value="in transit" ${log.travelStatus === "in transit" ? 'selected' : ''}>In Transit</option>
-                            <option value="delivered" ${log.travelStatus === "delivered" ? 'selected' : ''}>Delivered</option>
-                        </select>
-                    </td>
-                `;
-                
-                tableBody.appendChild(row);
-            });
-            
-            // Add event listeners to status selects
-            document.querySelectorAll('.statusSelect').forEach(select => {
-                select.addEventListener('change', function() {
-                    const logId = this.getAttribute('data-log-id');
-                    const newStatus = this.value;
-                    updateTravelStatus(logId, newStatus);
+        // Fetch both goods and travel logs data
+        async function fetchData() {
+            try {
+                // Fetch data from both collections in parallel
+                const [goodsResponse, travelLogsResponse] = await Promise.all([
+                    fetch('/goods/all'),
+                    fetch('/travellogs/all')
+                ]);
+
+                if (!goodsResponse.ok || !travelLogsResponse.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+
+                allGoods = await goodsResponse.json();
+                allTravelLogs = await travelLogsResponse.json();
+
+                // Create a map for quicker lookup
+                goodsMap = {};
+                allGoods.forEach(good => {
+                    if (good.shipmentNumberId) {
+                        goodsMap[good.shipmentNumberId] = good;
+                    }
                 });
-            });
+
+                // Apply initial filtering
+                filterData();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                alert('Failed to load data. Please try again.');
+            }
         }
-        
-        function populateRegulationTable(logs) {
-            const tableBody = document.querySelector("#regulationTable tbody");
+
+        // Format date for better readability
+        function formatDate(dateString) {
+            if (!dateString) return "Not scheduled";
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        // Filter data based on search inputs and populate tables
+        function filterData() {
+            const verifiedSearchText = document.getElementById('verifiedSearch').value.toLowerCase();
+            const pendingSearchText = document.getElementById('pendingSearch').value.toLowerCase();
+            const rejectedSearchText = document.getElementById('rejectedSearch').value.toLowerCase();
+
+            // Create arrays to hold combined data
+            let verifiedShipments = [];
+            let pendingShipments = [];
+            let rejectedShipments = [];
+
+            // Match travel logs with goods and separate by status
+            allTravelLogs.forEach(log => {
+                if (log.shipmentNumberId && goodsMap[log.shipmentNumberId]) {
+                    const good = goodsMap[log.shipmentNumberId];
+                    const combinedData = {
+                        shipmentId: log.shipmentNumberId,
+                        origin: log.origin || 'Not available',
+                        destination: log.destination || 'Not available',
+                        travelDate: log.travelDate,
+                        status: good.regulationStatus,
+                        category: good.category || 'Not specified',
+                        description: good.description || 'No description',
+                        packageId: good.packageId,
+                        logId: log.logId
+                    };
+
+                    if (good.regulationStatus === "Verified") {
+                        verifiedShipments.push(combinedData);
+                    } else if (good.regulationStatus === "Yet to be Verified") {
+                        pendingShipments.push(combinedData);
+                    } else if (good.regulationStatus === "Rejected") {
+                        rejectedShipments.push(combinedData);
+                    }
+                }
+            });
+
+            // Apply search filters
+            filteredVerified = verifiedSearchText ? 
+                verifiedShipments.filter(item => item.shipmentId.toLowerCase().includes(verifiedSearchText)) : 
+                verifiedShipments;
+                
+            filteredPending = pendingSearchText ? 
+                pendingShipments.filter(item => item.shipmentId.toLowerCase().includes(pendingSearchText)) : 
+                pendingShipments;
+                
+            filteredRejected = rejectedSearchText ? 
+                rejectedShipments.filter(item => item.shipmentId.toLowerCase().includes(rejectedSearchText)) : 
+                rejectedShipments;
+
+            // Populate tables
+            populateVerifiedTable(filteredVerified);
+            populatePendingTable(filteredPending);
+            populateRejectedTable(filteredRejected);
+        }
+
+        // Populate verified table
+        function populateVerifiedTable(shipments) {
+            const tableBody = document.querySelector("#verifiedTable tbody");
             tableBody.innerHTML = "";
             
-            logs.forEach(log => {
-                const row = document.createElement("tr");
+            if (shipments.length === 0) {
+                document.getElementById('verifiedNoData').style.display = 'block';
+            } else {
+                document.getElementById('verifiedNoData').style.display = 'none';
                 
-                row.innerHTML = `
-                    <td>${log.shipmentId}</td>
-                    <td>${log.origin}</td>
-                    <td>${log.destination}</td>
-                    <td>${log.date}</td>
-                    <td class="statusCell">${log.travelStatus}</td>
-                    <td>${log.category}</td>
-                    <td>
-                        <button class="verifyButton" data-log-id="${log.logId}">Verify</button>
-                    </td>
-                `;
-                
-                tableBody.appendChild(row);
-            });
-            
-            // Add event listeners to verify buttons
-            document.querySelectorAll('.verifyButton').forEach(button => {
-                button.addEventListener('click', function() {
-                    const logId = this.getAttribute('data-log-id');
-                    verifyShipment(logId);
+                shipments.forEach(shipment => {
+                    const row = document.createElement("tr");
+                    
+                    // Get current travel status
+                    const travelLog = allTravelLogs.find(log => log.shipmentNumberId === shipment.shipmentId);
+                    const currentStatus = travelLog ? travelLog.travelStatus : "waiting to be picked up";
+                    
+                    // Create a status class for styling
+                    const statusClass = currentStatus.replace(/\s+/g, '-');
+                    
+                    row.innerHTML = `
+                        <td>${shipment.shipmentId}</td>
+                        <td>${shipment.origin}</td>
+                        <td>${shipment.destination}</td>
+                        <td>${formatDate(shipment.travelDate)}</td>
+                        <td class="statusCell ${statusClass}">${currentStatus}</td>
+                        <td>${shipment.category}</td>
+                        <td>${shipment.description}</td>
+                        <td>
+                            <select class="statusSelect" data-log-id="${travelLog ? travelLog.logId : ''}" data-shipment-id="${shipment.shipmentId}">
+                                <option value="waiting to be picked up" ${currentStatus === "waiting to be picked up" ? 'selected' : ''}>Waiting to be picked up</option>
+                                <option value="shipping" ${currentStatus === "shipping" ? 'selected' : ''}>Shipping</option>
+                                <option value="arrived at final pickup point" ${currentStatus === "arrived at final pickup point" ? 'selected' : ''}>Arrived at pickup point</option>
+                                <option value="out for delivery" ${currentStatus === "out for delivery" ? 'selected' : ''}>Out for delivery</option>
+                                <option value="delivered" ${currentStatus === "delivered" ? 'selected' : ''}>Delivered</option>
+                            </select>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
                 });
-            });
+                
+                // Add event listeners to status selects
+                document.querySelectorAll('.statusSelect').forEach(select => {
+                    select.addEventListener('change', function() {
+                        const logId = this.getAttribute('data-log-id');
+                        const shipmentId = this.getAttribute('data-shipment-id');
+                        const newStatus = this.value;
+                        
+                        if (logId) {
+                            updateTravelStatus(logId, newStatus);
+                        } else {
+                            // If no log ID exists yet, we might need to create one
+                            createTravelLogForShipment(shipmentId, newStatus);
+                        }
+                    });
+                });
+            }
         }
         
         // Function to update travel status
-        function updateTravelStatus(logId, newStatus) {
-            console.log(`Updating log ${logId} status to ${newStatus}`);
-            
-            // Update the local data
-            const logIndex = travelLogs.findIndex(log => log.logId === logId);
-            if (logIndex !== -1) {
-                travelLogs[logIndex].travelStatus = newStatus;
-                
-                // In a real app, you would send an AJAX request to the server
-                // fetch(`/api/travel-log/${logId}`, {
-                //     method: 'PUT',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify({ Travel_Status: newStatus })
-                // });
-                
-                // Update the displayed status cell
-                const statusCells = document.querySelectorAll(`[data-log-id="${logId}"]`);
-                statusCells.forEach(select => {
-                    const row = select.closest('tr');
-                    if (row) {
-                        const statusCell = row.querySelector('.statusCell');
-                        if (statusCell) {
-                            statusCell.textContent = newStatus;
-                        }
-                    }
+        async function updateTravelStatus(logId, newStatus) {
+            try {
+                const response = await fetch(`/travellogs/${logId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        travelStatus: newStatus
+                    })
                 });
                 
-                refreshTables();
+                if (!response.ok) {
+                    throw new Error('Failed to update travel status');
+                }
+                
+                // Update local data
+                const logIndex = allTravelLogs.findIndex(log => log.logId === logId);
+                if (logIndex !== -1) {
+                    allTravelLogs[logIndex].travelStatus = newStatus;
+                }
+                
+                // Refresh data display
+                filterData();
+                
+            } catch (error) {
+                console.error('Error updating travel status:', error);
+                alert('Failed to update travel status. Please try again.');
             }
         }
         
-        // Function to verify shipment
-        function verifyShipment(logId) {
-            console.log(`Verifying shipment for log ${logId}`);
+        // Create a travel log for a shipment that doesn't have one
+        async function createTravelLogForShipment(shipmentId, status) {
+            try {
+                // First, find the corresponding good to get package details
+                const good = Object.values(goodsMap).find(g => g.shipmentNumberId === shipmentId);
+                
+                if (!good) {
+                    throw new Error('Shipment not found');
+                }
+                
+                // Create a new travel log
+                const response = await fetch('/travellogs/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        shipmentNumberId: shipmentId,
+                        travelStatus: status,
+                        // You'd need to add other required fields based on your TravelLog model
+                        origin: "Not specified",
+                        destination: "Not specified",
+                        travelDate: new Date(),
+                        modeOfTransport: "Ship",
+                        eta: null,
+                        startTime: null,
+                        actualEndTime: null
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to create travel log');
+                }
+                
+                // Add the new travel log to our local data
+                const newLog = await response.json();
+                allTravelLogs.push(newLog);
+                
+                // Refresh data display
+                filterData();
+                
+            } catch (error) {
+                console.error('Error creating travel log:', error);
+                alert('Failed to create travel log. Please try again.');
+            }
+        }
+
+        // Populate pending table
+        function populatePendingTable(shipments) {
+            const tableBody = document.querySelector("#pendingTable tbody");
+            tableBody.innerHTML = "";
             
-            // Update travel status to "waiting to be picked up"
-            updateTravelStatus(logId, "waiting to be picked up");
+            if (shipments.length === 0) {
+                document.getElementById('pendingNoData').style.display = 'block';
+            } else {
+                document.getElementById('pendingNoData').style.display = 'none';
+                
+                shipments.forEach(shipment => {
+                    const row = document.createElement("tr");
+                    
+                    row.innerHTML = `
+                        <td>${shipment.shipmentId}</td>
+                        <td>${shipment.origin}</td>
+                        <td>${shipment.destination}</td>
+                        <td>${formatDate(shipment.travelDate)}</td>
+                        <td>${shipment.category}</td>
+                        <td>${shipment.description}</td>
+                        <td>
+                            <button class="actionBtn verifyBtn" data-id="${shipment.packageId}">Verify</button>
+                            <button class="actionBtn rejectBtn" data-id="${shipment.packageId}">Reject</button>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+                
+                // Add event listeners to action buttons
+                document.querySelectorAll('.verifyBtn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        updateGoodStatus(this.getAttribute('data-id'), "Verified");
+                    });
+                });
+                
+                document.querySelectorAll('.rejectBtn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        updateGoodStatus(this.getAttribute('data-id'), "Rejected");
+                    });
+                });
+            }
+        }
+
+        // Populate rejected table
+        function populateRejectedTable(shipments) {
+            const tableBody = document.querySelector("#rejectedTable tbody");
+            tableBody.innerHTML = "";
             
-            // In a real app, you would update regulation status via AJAX
-            // fetch(`/api/goods/${logId}`, {
-            //     method: 'PUT',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ Regulation_Status: "Verified" })
-            // });
-            
-            alert(`Shipment ${logId} has been verified!`);
+            if (shipments.length === 0) {
+                document.getElementById('rejectedNoData').style.display = 'block';
+            } else {
+                document.getElementById('rejectedNoData').style.display = 'none';
+                
+                shipments.forEach(shipment => {
+                    const row = document.createElement("tr");
+                    
+                    row.innerHTML = `
+                        <td>${shipment.shipmentId}</td>
+                        <td>${shipment.origin}</td>
+                        <td>${shipment.destination}</td>
+                        <td>${formatDate(shipment.travelDate)}</td>
+                        <td class="statusCell rejected">${shipment.status}</td>
+                        <td>${shipment.category}</td>
+                        <td>${shipment.description}</td>
+                        <td>
+                            <button class="actionBtn restoreBtn" data-id="${shipment.packageId}">Restore</button>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+                
+                // Add event listeners to restore buttons
+                document.querySelectorAll('.restoreBtn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        updateGoodStatus(this.getAttribute('data-id'), "Verified");
+                    });
+                });
+            }
+        }
+
+        // Update good status
+        async function updateGoodStatus(packageId, newStatus) {
+            try {
+                const response = await fetch(`/goods/${packageId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        regulationStatus: newStatus
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to update status');
+                }
+                
+                // Update our local data
+                for (let i = 0; i < allGoods.length; i++) {
+                    if (allGoods[i].packageId === packageId) {
+                        allGoods[i].regulationStatus = newStatus;
+                        
+                        // Also update in our map
+                        if (allGoods[i].shipmentNumberId) {
+                            goodsMap[allGoods[i].shipmentNumberId].regulationStatus = newStatus;
+                        }
+                        
+                        break;
+                    }
+                }
+                
+                // Update travel log status if status is verified
+                if (newStatus === "Verified") {
+                    // Find the travel log with this shipment ID
+                    const good = allGoods.find(g => g.packageId === packageId);
+                    if (good && good.shipmentNumberId) {
+                        const travelLog = allTravelLogs.find(log => log.shipmentNumberId === good.shipmentNumberId);
+                        if (travelLog && travelLog.travelStatus === "yet to be verified") {
+                            // Update travel status to "waiting to be picked up"
+                            await fetch(`/travellogs/${travelLog.logId}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    travelStatus: "waiting to be picked up"
+                                })
+                            });
+                            
+                            // Update local data
+                            const logIndex = allTravelLogs.findIndex(log => log.logId === travelLog.logId);
+                            if (logIndex !== -1) {
+                                allTravelLogs[logIndex].travelStatus = "waiting to be picked up";
+                            }
+                        } else if (!travelLog) {
+                            // Create a new travel log if none exists
+                            await createTravelLogForShipment(good.shipmentNumberId, "waiting to be picked up");
+                        }
+                    }
+                }
+                
+                // Refresh data display
+                filterData();
+                
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('Failed to update status. Please try again.');
+            }
+        }
+
+        // Set up search input event listeners
+        document.getElementById('verifiedSearch').addEventListener('input', filterData);
+        document.getElementById('pendingSearch').addEventListener('input', filterData);
+        document.getElementById('rejectedSearch').addEventListener('input', filterData);
+        
+        // Set up refresh buttons
+        function setupRefreshButton(id) {
+            document.getElementById(id).addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                icon.style.transition = 'transform 1s ease';
+                icon.style.transform = 'rotate(360deg)';
+                
+                fetchData().then(() => {
+                    setTimeout(() => {
+                        icon.style.transition = 'none';
+                        icon.style.transform = 'rotate(0)';
+                    }, 1000);
+                });
+            });
         }
         
-        // Function to filter logs by shipment ID
-        function filterLogsByShipmentId(logs, searchText) {
-            if (!searchText.trim()) return logs;
-            return logs.filter(log => log.shipmentId.toLowerCase().includes(searchText.toLowerCase()));
-        }
+        setupRefreshButton('refreshVerified');
+        setupRefreshButton('refreshPending');
+        setupRefreshButton('refreshRejected');
         
-        // Function to refresh tables based on search
-        function refreshTables() {
-            const searchText = document.getElementById('shipmentSearch').value;
-            const regulationSearchText = document.getElementById('regulationSearch').value;
-            
-            const filteredLogs = filterLogsByShipmentId(travelLogs, searchText);
-            const filteredRegulationLogs = filterLogsByShipmentId(travelLogs, regulationSearchText);
-            
-            populateTravelLogTable(filteredLogs);
-            populateRegulationTable(filteredRegulationLogs);
-        }
-        
-        // Set up event listeners for search inputs
-        document.getElementById('shipmentSearch').addEventListener('input', refreshTables);
-        document.getElementById('regulationSearch').addEventListener('input', refreshTables);
-        
-        // Initialize tables on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            refreshTables();
-        });
-        
-        // Initialize immediately
-        populateTravelLogTable(travelLogs);
-        populateRegulationTable(travelLogs);
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', fetchData);
     </script>
 </body>
 </html>
