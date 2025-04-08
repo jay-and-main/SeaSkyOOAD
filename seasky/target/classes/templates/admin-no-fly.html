@@ -299,6 +299,110 @@
                 margin-top: 60px;
             }
         }
+        
+        .noFlyTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .noFlyTable th, .noFlyTable td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .noFlyTable th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #334155;
+        }
+        
+        .noFlyTable tr:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .noFlyTable .actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .deleteBtn {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background-color 0.3s;
+        }
+        
+        .deleteBtn:hover {
+            background-color: #dc2626;
+        }
+        
+        .successMessage {
+            background-color: #ecfdf5;
+            color: #10b981;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            border-left: 5px solid #10b981;
+        }
+        
+        .successMessage i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .tabContainer {
+            margin-top: 30px;
+            width: 100%;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #d1d5db;
+        }
+        
+        .tabButton {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tabButton.active {
+            color: #0070f3;
+            border-bottom-color: #0070f3;
+        }
+        
+        .tabButton:hover:not(.active) {
+            color: #4b5563;
+            border-bottom-color: #d1d5db;
+        }
+        
+        .tabPanel {
+            padding: 20px 0;
+            display: none;
+        }
+        
+        .tabPanel.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -340,6 +444,27 @@
                     <i class="fas fa-exclamation-circle"></i>
                     <span id="errorMessage"></span>
                 </div>
+                
+                <div class="tabContainer">
+                    <div class="tabs">
+                        <button id="viewAllTab" class="tabButton active">View All Entries</button>
+                    </div>
+                    <div id="viewAllPanel" class="tabPanel active">
+                        <table class="noFlyTable">
+                            <thead>
+                                <tr>
+                                    <th>Passport Number</th>
+                                    <th>Date Added</th>
+                                    <th>Reason</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="noFlyTableBody">
+                                <!-- Data will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
             
             <!-- Add to No-Fly List Section -->
@@ -369,6 +494,11 @@
                     </button>
                 </form>
                 
+                <div id="addSuccessContainer" style="display:none;" class="successMessage">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="successMessage"></span>
+                </div>
+                
                 <div id="addErrorContainer" style="display:none;" class="error">
                     <i class="fas fa-exclamation-circle"></i>
                     <span id="addErrorMessage"></span>
@@ -378,89 +508,180 @@
     </div>
 
     <script>
+        // Function to format date to readable format
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+        
+        // Load all no-fly entries when the page loads
+        window.addEventListener('DOMContentLoaded', fetchAllNoFlyEntries);
+        
+        // Function to fetch and display all no-fly entries
+        function fetchAllNoFlyEntries() {
+            fetch('/api/nofly/all')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('noFlyTableBody');
+                    tableBody.innerHTML = '';
+                    
+                    if (data && data.length > 0) {
+                        data.forEach(entry => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${entry.passportNumber}</td>
+                                <td>${formatDate(entry.dateAdded)}</td>
+                                <td>${entry.reason}</td>
+                                <td class="actions">
+                                    <button class="deleteBtn" data-id="${entry.id}">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                        
+                        // Add event listeners to delete buttons
+                        document.querySelectorAll('.deleteBtn').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const id = this.getAttribute('data-id');
+                                removeFromNoFlyList(id);
+                            });
+                        });
+                    } else {
+                        tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No entries found</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching no-fly list:', error);
+                    const tableBody = document.getElementById('noFlyTableBody');
+                    tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Error loading data</td></tr>';
+                });
+        }
+        
+        // Function to remove an entry from the no-fly list
+        function removeFromNoFlyList(id) {
+            if (confirm('Are you sure you want to remove this entry from the no-fly list?')) {
+                fetch(`/api/nofly/remove/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        // Show success message
+                        const successContainer = document.getElementById('addSuccessContainer');
+                        const successMessage = document.getElementById('successMessage');
+                        successMessage.textContent = data.message;
+                        successContainer.style.display = 'flex';
+                        
+                        // Hide the message after 3 seconds
+                        setTimeout(() => {
+                            successContainer.style.display = 'none';
+                        }, 3000);
+                        
+                        // Refresh the list
+                        fetchAllNoFlyEntries();
+                    } else if (data.error) {
+                        throw new Error(data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing from no-fly list:', error);
+                    alert('Failed to remove from no-fly list: ' + error.message);
+                });
+            }
+        }
+        
         // Handle search form submission
-        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const passportNumber = document.getElementById('searchPassport').value;
             const resultContainer = document.getElementById('resultContainer');
             const errorContainer = document.getElementById('errorContainer');
             
-            try {
-                // Simulate API call (in a real app, this would be a fetch call)
-                await simulateApiCall({passportNumber});
-                
-                // Show success result (this would normally come from the API response)
-                const mockResult = {
-                    passportNumber: passportNumber,
-                    dateAdded: '2025-02-15',
-                    reason: 'Security concern identified during international travel screening process.'
-                };
-                
-                document.getElementById('resultPassport').textContent = mockResult.passportNumber;
-                document.getElementById('resultDate').textContent = mockResult.dateAdded;
-                document.getElementById('resultReason').textContent = mockResult.reason;
-                
-                resultContainer.style.display = 'block';
-                errorContainer.style.display = 'none';
-                
-            } catch (error) {
-                // Show error
-                document.getElementById('errorMessage').textContent = error.message;
-                errorContainer.style.display = 'flex';
-                resultContainer.style.display = 'none';
-            }
+            fetch(`/api/nofly/search?passportNumber=${encodeURIComponent(passportNumber)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        // Not found
+                        document.getElementById('errorMessage').textContent = data.message;
+                        errorContainer.style.display = 'flex';
+                        resultContainer.style.display = 'none';
+                    } else {
+                        // Display result
+                        document.getElementById('resultPassport').textContent = data.passportNumber;
+                        document.getElementById('resultDate').textContent = formatDate(data.dateAdded);
+                        document.getElementById('resultReason').textContent = data.reason;
+                        
+                        resultContainer.style.display = 'block';
+                        errorContainer.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error searching no-fly list:', error);
+                    document.getElementById('errorMessage').textContent = 'An error occurred while searching';
+                    errorContainer.style.display = 'flex';
+                    resultContainer.style.display = 'none';
+                });
         });
         
         // Handle add to no-fly list form submission
-        document.getElementById('addForm').addEventListener('submit', async function(e) {
+        document.getElementById('addForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const passportNumber = document.getElementById('addPassport').value;
             const reason = document.getElementById('reason').value;
             const addErrorContainer = document.getElementById('addErrorContainer');
+            const addSuccessContainer = document.getElementById('addSuccessContainer');
             
-            try {
-                // Simulate API call (in a real app, this would be a fetch call)
-                await simulateApiCall({passportNumber, reason});
-                
-                // Show success message
-                alert('Successfully added to no-fly list');
-                
-                // Reset form
-                document.getElementById('addPassport').value = '';
-                document.getElementById('reason').value = '';
-                addErrorContainer.style.display = 'none';
-                
-            } catch (error) {
-                // Show error
-                document.getElementById('addErrorMessage').textContent = error.message;
-                addErrorContainer.style.display = 'flex';
-            }
-        });
-        
-        // Function to simulate API call with random success/failure
-        function simulateApiCall(data) {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    // For demo purposes, we'll randomly succeed or fail
-                    // In a real app, this would be a fetch to your API endpoint
+            fetch('/api/nofly/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    passportNumber: passportNumber,
+                    reason: reason
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    // Show error
+                    document.getElementById('addErrorMessage').textContent = data.error;
+                    addErrorContainer.style.display = 'flex';
+                    addSuccessContainer.style.display = 'none';
+                } else {
+                    // Show success message
+                    document.getElementById('successMessage').textContent = 'Successfully added to no-fly list';
+                    addSuccessContainer.style.display = 'flex';
+                    addErrorContainer.style.display = 'none';
                     
-                    // 80% success rate for demo
-                    if (Math.random() > 0.2) {
-                        resolve({success: true});
-                    } else {
-                        // For search, show "not found" error
-                        if (!data.reason) {
-                            reject(new Error('Passport number not found in no-fly list'));
-                        } else {
-                            // For add, show different error
-                            reject(new Error('Failed to add to no-fly list. Please try again.'));
-                        }
-                    }
-                }, 500); // Simulate network delay
+                    // Reset form
+                    document.getElementById('addPassport').value = '';
+                    document.getElementById('reason').value = '';
+                    
+                    // Hide the message after 3 seconds
+                    setTimeout(() => {
+                        addSuccessContainer.style.display = 'none';
+                    }, 3000);
+                    
+                    // Refresh the list
+                    fetchAllNoFlyEntries();
+                }
+            })
+            .catch(error => {
+                console.error('Error adding to no-fly list:', error);
+                document.getElementById('addErrorMessage').textContent = 'Failed to add to no-fly list';
+                addErrorContainer.style.display = 'flex';
+                addSuccessContainer.style.display = 'none';
             });
-        }
+        });
         
         // Input animations
         const inputs = document.querySelectorAll('input, textarea');
