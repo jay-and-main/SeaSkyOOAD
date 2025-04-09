@@ -103,6 +103,31 @@
             margin-top: 0;
             color: #0070f3;
         }
+        
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #0070f3;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -121,7 +146,11 @@
                 required
                 placeholder="Enter your passport number"
             />
-            <button class="button" style="margin-top: 10px;" onclick="confirmBooking()">Confirm Booking</button>
+            <div id="errorMessage" class="error-message"></div>
+            <button class="button" style="margin-top: 10px;" id="confirmButton" onclick="confirmBooking()">
+                Confirm Booking
+                <span id="loadingSpinner" class="loading" style="display: none;"></span>
+            </button>
         </div>
     </div>
 
@@ -183,7 +212,6 @@
         function handleSelect(flightId) {
             selectedFlightId = flightId;
             
-            // Highlight the selected card
             document.querySelectorAll('.card').forEach(card => {
                 const button = card.querySelector('button');
                 if (button.getAttribute('onclick').includes(flightId)) {
@@ -196,106 +224,133 @@
             });
         }
         
-        function confirmBooking() {
+        // Check if passport is on no-fly list
+        async function checkNoFlyList(passportNumber) {
+            try {
+                const response = await fetch(`/api/nofly/check?passportNumber=${encodeURIComponent(passportNumber)}`);
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error checking no-fly list:', error);
+                throw new Error('Failed to check no-fly list');
+            }
+        }
+        
+        async function confirmBooking() {
             const passportNumber = document.getElementById('passportNumber').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const confirmButton = document.getElementById('confirmButton');
+            
+            errorMessage.style.display = 'none';
             
             if (!passportNumber) {
-                alert('Please enter your passport number');
+                errorMessage.textContent = 'Please enter your passport number';
+                errorMessage.style.display = 'block';
                 return;
             }
             
             if (!selectedFlightId) {
-                alert('Please select a flight');
+                errorMessage.textContent = 'Please select a flight';
+                errorMessage.style.display = 'block';
                 return;
             }
             
-            // In a real app, we would send this data to the server to create a booking
-            const selectedCard = document.querySelector('.card[style*="border: 2px solid"]');
-            const airline = selectedCard.querySelector('h2').textContent;
-            const price = selectedCard.querySelector('p:nth-child(5)').textContent.split('$')[1];
-
-            const bookingData = {
-                departureDate: new Date(travelDate),
-                bookingStatus: "Confirmed",
-            }
-
-            const travelData = {
-                travelStatus: "Scheduled",
-                origin: fromCity,
-                destination: toCity,
-                travelDate: new Date(travelDate),
-                modeOfTransport: "Flight",
-                eta: "18:00",
-                startTime: "14:00",
-                actualEndTime: null ,
-                passportNumber: passportNumber,
-            }
-
-            const passengerData = {
-                passportNumber: passportNumber,
-                userId: null,
-            }
-
-            fetch('/bookings/create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(bookingData)
-            })
-            .then(response => {
-                if(!response.ok) {
+            loadingSpinner.style.display = 'inline-block';
+            confirmButton.disabled = true;
+            
+            try {
+                const noFlyCheck = await checkNoFlyList(passportNumber);
+                
+                if (noFlyCheck.isOnNoFlyList) {
+                    const reason = noFlyCheck.reason || 'No specific reason provided';
+                    errorMessage.textContent = `Unable to proceed with booking. Your passport is on the no-fly list. Reason: ${reason}`;
+                    errorMessage.style.display = 'block';
+                    
+                    loadingSpinner.style.display = 'none';
+                    confirmButton.disabled = false;
+                    return;
+                }
+                
+                const selectedCard = document.querySelector('.card[style*="border: 2px solid"]');
+                const airline = selectedCard.querySelector('h2').textContent;
+                const price = selectedCard.querySelector('p:nth-child(5)').textContent.split('$')[1];
+    
+                const bookingData = {
+                    departureDate: new Date(travelDate),
+                    bookingStatus: "Confirmed",
+                }
+    
+                const travelData = {
+                    travelStatus: "Scheduled",
+                    origin: fromCity,
+                    destination: toCity,
+                    travelDate: new Date(travelDate),
+                    modeOfTransport: "Flight",
+                    eta: "18:00",
+                    startTime: "14:00",
+                    actualEndTime: null,
+                    passportNumber: passportNumber,
+                }
+    
+                const passengerData = {
+                    passportNumber: passportNumber,
+                    userId: null,
+                }
+    
+                const bookingResponse = await fetch('/bookings/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+                
+                if (!bookingResponse.ok) {
                     throw new Error('Failed to create booking');
                 }
-
-                return response.json();
-            })
-            .then(bookingResponse => {
-                console.log('Booking created:', bookingResponse);
-
-                return fetch('/travellogs/create', {
+                
+                console.log('Booking created:', await bookingResponse.json());
+    
+                const travelResponse = await fetch('/travellogs/create', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(travelData)
-                })
-            })
-            .then(response => {
-                if(!response.ok) {
+                });
+                
+                if (!travelResponse.ok) {
                     throw new Error('Failed to create travel log');
                 }
-
-                return response.json();
-            })
-            .then(travelResponse => {
-                console.log('Travel log created:', travelResponse);
                 
-                return fetch('/passengers/create', {
+                console.log('Travel log created:', await travelResponse.json());
+                
+                const passengerResponse = await fetch('/passengers/create', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(passengerData)
-                })
-            })
-            .then(response => {
-                if(!response.ok) {
+                });
+                
+                if (!passengerResponse.ok) {
                     throw new Error('Failed to create passenger');
                 }
-
-                return response.json();
-            })
-            .then(passengerResponse => {
-                console.log('Passenger created:', passengerResponse);
+                
+                console.log('Passenger created:', await passengerResponse.json());
                 
                 alert(`Booking confirmed!\nFlight: ${selectedFlightId}\nAirline: ${airline}\nPassport: ${passportNumber}\nFrom: ${fromCity}\nTo: ${toCity}\nDate: ${travelDate}`);
                 window.location.href = `/home`;
-            })
-            .catch(error => {
+                
+            } catch (error) {
                 console.error('Booking error:', error);
-                alert('Failed to confirm booking');
-            });
+                errorMessage.textContent = 'Failed to confirm booking: ' + error.message;
+                errorMessage.style.display = 'block';
+            } finally {
+                loadingSpinner.style.display = 'none';
+                confirmButton.disabled = false;
+            }
         }
     </script>
 </body>

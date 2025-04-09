@@ -68,6 +68,28 @@ public class NoFlyController {
         }
     }
 
+    @GetMapping("/check")
+    public ResponseEntity<?> checkPassport(@RequestParam String passportNumber) {
+        try {
+            boolean isOnNoFlyList = noFlyRepository.existsByPassportNumber(passportNumber);
+            Map<String, Object> response = new HashMap<>();
+            response.put("isOnNoFlyList", isOnNoFlyList);
+            
+            if (isOnNoFlyList) {
+                Optional<NoFly> noFly = noFlyRepository.findByPassportNumber(passportNumber);
+                if (noFly.isPresent()) {
+                    response.put("reason", noFly.get().getReason());
+                }
+            }
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Error checking no-fly list: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
     @DeleteMapping("/remove/{id}")
     public ResponseEntity<?> removeFromNoFly(@PathVariable String id) {
         try {
