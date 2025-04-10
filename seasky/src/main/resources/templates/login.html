@@ -120,7 +120,7 @@
                     />
                 </div>
                 <div id="errorMessage" class="error-message" style="display: none;"></div>
-                <button type="submit" onclick="window.location.href='/home'">Login</button>
+                <button type="submit">Login</button>
             </form>
             <p class="registerPrompt">
                 Haven't registered? <a href="/register" class="link">Register now</a>
@@ -136,24 +136,27 @@
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
             
+            errorMessage.style.display = 'none';
+            
             try {
-                const response = await fetch('/users/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+                const emailCheckResponse = await fetch(`/users/email/${email}`);
+                const userData = await emailCheckResponse.json();
                 
-                const data = await response.json();
+                if (!userData || Object.keys(userData).length === 0) {
+                    errorMessage.textContent = 'User not found. Please check your email or register.';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
                 
-                if (response.ok) {
-                    // Store token and redirect
-                    localStorage.setItem('token', data.token);
+                if (userData.password === password) {
+                    localStorage.setItem('userId', userData.id);
                     window.location.href = '/home';
                 } else {
-                    errorMessage.textContent = data.message || 'Login failed';
+                    errorMessage.textContent = 'Invalid password. Please try again.';
                     errorMessage.style.display = 'block';
                 }
             } catch (error) {
+                console.error('Login error:', error);
                 errorMessage.textContent = 'An error occurred. Please try again.';
                 errorMessage.style.display = 'block';
             }
